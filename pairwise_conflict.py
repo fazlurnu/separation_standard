@@ -15,13 +15,8 @@ DTLOOKAHEAD = 15 # in seconds
 
 DRONE_TYPE = 'M600'
 ALT = 100
-SPEED = 20
 
 TMAX = DTLOOKAHEAD * 4
-
-PAIR_WIDTH = 4
-PAIR_HEIGHT = 4
-NB_PAIR = PAIR_WIDTH * PAIR_HEIGHT
 
 class PairwiseHorConflict():
     """ 
@@ -37,27 +32,34 @@ class PairwiseHorConflict():
     - implement the ADS-L class -> for instnace if(random() < reception_prob): update_pos (communication uncertainty)
     """
 
-    def __init__(self):
-        bs.init(mode='sim', detached=True)
+    def __init__(self, 
+                pair_width: int, 
+                pair_height: int, 
+                asas_pzr_m: float, 
+                dtlookahead: float,
+                speed: float,
+                inherent_asas_on: bool = False) -> None:
+        
+        self.nb_pair = pair_width * pair_height
+        self.asas_pzr_m = asas_pzr_m
+        self.dtlookahead = dtlookahead
 
-        nb_pair = 4
+        bs.init(mode='sim', detached=True)
 
         start_lat = 52.3
         start_lon = 4.7
         delta_lat_lon = 0.02
 
         # set conflict definition
-        bs.settings.asas_pzr = ASAS_PZR_M * M2NM
-        bs.settings.asas_dtlookahead = DTLOOKAHEAD
+        bs.settings.asas_pzr = self.asas_pzr_m * M2NM
+        bs.settings.asas_dtlookahead = self.dtlookahead
 
         dcpa = DCPA_M * M2NM
-        dpsi = 45
 
         # create drones
         counter = 0
-
-        for i in range(PAIR_WIDTH):
-            for j in range(PAIR_HEIGHT):
+        for i in range(pair_width):
+            for j in range(pair_height):
                 ownship_id = f"DRO{counter:03}"
                 intruder_id = f"DRI{counter:03}"
 
@@ -66,51 +68,60 @@ class PairwiseHorConflict():
                 achdgs = 0 ## in degrees
                 
                 bs.traf.cre(acid=ownship_id, actype=DRONE_TYPE, aclat=aclats, aclon=aclons,
-                    achdg=achdgs, acalt=ALT, acspd=SPEED)
+                    achdg=achdgs, acalt=ALT, acspd=speed)
 
+                ## make intruder, dpsi is random
                 bs.traf.creconfs(acid=intruder_id, actype = DRONE_TYPE, targetidx=bs.traf.id2idx(ownship_id),
-                                dpsi=dpsi, dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = SPEED)
+                                dpsi=np.random.uniform(0, 360), dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = speed)
                 
                 counter += 1
+
+        if(inherent_asas_on):
+            bs.stack.stack("ASAS ON")
+            bs.stack.stack("RESO MVP")
             
-    def step(self):
+    def step(self) -> np.ndarray:
         # set simulation time step, and enable fast-time running
         simdt = bs.settings.simdt
         bs.stack.stack(f"DT {simdt};FF")
-
         t = np.arange(0, TMAX + simdt, simdt)
 
         # allocate some empty arrays for the results
         ntraf = bs.traf.ntraf
         self.res = np.zeros((len(t), 4, ntraf))
 
-        # iteratively simulate the traffic
-        distance_array = np.zeros((len(t)))
+        self.distance_array = np.zeros((len(t), self.nb_pair))
 
+        # iteratively simulate the traffic
         for i in range(len(t)):
             # Perform one step of the simulation
             bs.sim.step()
 
-            lat_dro_0 = bs.traf.lat[0]
-            lon_dro_0 = bs.traf.lon[0]
-            point_dro = (lat_dro_0, lon_dro_0)
+            for pair in range(self.nb_pair):
+                ownship_id = f"DRO{pair:03}"
+                intruder_id = f"DRI{pair:03}"
 
-            lat_dri_0 = bs.traf.lat[1]
-            lon_dri_0 = bs.traf.lon[1]
-            point_dri = (lat_dri_0, lon_dri_0)
+                lat_dro_0 = bs.traf.lat[bs.traf.id2idx(ownship_id)]
+                lon_dro_0 = bs.traf.lon[bs.traf.id2idx(ownship_id)]
+                point_dro = (lat_dro_0, lon_dro_0)
 
-            distance = geodesic(point_dro, point_dri).meters
-            distance_array[i] = distance
+                lat_dri_0 = bs.traf.lat[bs.traf.id2idx(intruder_id)]
+                lon_dri_0 = bs.traf.lon[bs.traf.id2idx(intruder_id)]
+                point_dri = (lat_dri_0, lon_dri_0)
 
-            # save the results from the simulator in the results array,
-            # here we keep the latitude, longitude, altitude and TAS
+                distance = geodesic(point_dro, point_dri).meters
+                self.distance_array[i][pair] = distance
+
             self.res[i] = [bs.traf.lat,
                         bs.traf.lon,
                         bs.traf.alt,
                         bs.traf.tas,
                         ]
             
-        print(min(distance_array))
+        self.distance_array = np.array(self.distance_array)
+        distance_cpa = np.min(self.distance_array, axis=0)
+        
+        return distance_cpa
 
     def plot(self):
         plt.figure()
