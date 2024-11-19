@@ -23,7 +23,7 @@ nautical_mile = 1852 # in m
 bs.settings.asas_pzr = asas_pzr/nautical_mile # in nautical mile
 bs.settings.asas_dtlookahead = 15 # in seconds
 
-dcpa_m = 0
+dcpa_m = 20
 dcpa = dcpa_m/nautical_mile
 dpsi = 45
 
@@ -38,8 +38,6 @@ for pair_id in range(nb_pair):
     
     bs.traf.cre(acid=ownship_id, actype=drone_type, aclat=aclats, aclon=aclons,
         achdg=achdgs, acalt=alt, acspd=speed)
-    
-    print(bs.settings.asas_pzr, bs.settings.asas_dtlookahead)
 
     bs.traf.creconfs(acid=intruder_id, actype = drone_type, targetidx=bs.traf.id2idx(ownship_id),
                      dpsi=dpsi, dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = speed)
@@ -60,6 +58,9 @@ res = np.zeros((len(t), 4, ntraf))
 
 # iteratively simulate the traffic
 distance_array = np.zeros((len(t)))
+
+bs.stack.stack(f"ASAS ON")
+bs.stack.stack(f"RESO MVP")
 
 for i in range(len(t)):
     # Perform one step of the simulation
@@ -84,8 +85,6 @@ for i in range(len(t)):
                 bs.traf.tas,
                 ]
 
-print(distance)
-
 plt.figure()
 
 for idx in range(ntraf):
@@ -96,3 +95,5 @@ plt.plot(t, distance_array)
 plt.axhline(dcpa_m, min(t), max(t), color = 'r', linestyle = '--')
 
 plt.show()
+
+print(min(distance_array))
