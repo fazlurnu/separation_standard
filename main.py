@@ -12,9 +12,9 @@ height = 2
 
 horizontal_sep = 50
 lookahead_time = 15 ## seconds
-tmax = 1.5*lookahead_time ## seconds
+tmax = 4 * lookahead_time ## seconds
 
-init_speed = 20
+init_speed = 18
 
 ## initiate things
 
@@ -38,17 +38,12 @@ for i in range(len(t)):
     states = pairwise._get_states()
     conf_detection.detect(states, states, horizontal_sep, 100, lookahead_time)
     reso = conf_resolution.resolve(conf_detection, states, states)
-
-    print(reso)
-
-    ## in below add step(reso)
-    ## this shall be a dictionary that contains id, new_trk, new_spd, new_vs
     
-    distance_ = pairwise.step(None)
+    distance_ = pairwise.step(conf_detection, reso)
     distance_array.append(distance_)
 
 ## calcualte the metrics
-print(states.lat, states.ntraf)
+print(states.id, states.gs, states.hdg)
 print(conf_detection.confpairs)
 
 distance_cpa = np.min(distance_array, axis=0)

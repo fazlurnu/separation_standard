@@ -39,6 +39,11 @@ class PairwiseHorConflict():
         self.init_speed = init_speed
         self.drone_type = drone_type
 
+        self.init_heading = np.array([
+                                        0 if i % 2 == 0 else np.random.uniform(0, 360)
+                                        for i in range(2 * pair_width * pair_height)
+                                    ])
+        print(self.init_heading)
         bs.init(mode='sim', detached=True)
 
         start_lat = 52.3
@@ -53,6 +58,8 @@ class PairwiseHorConflict():
 
         # create drones
         counter = 0
+        idx = 0
+
         for i in range(pair_width):
             for j in range(pair_height):
                 ownship_id = f"DRO{counter:03}"
@@ -63,11 +70,13 @@ class PairwiseHorConflict():
                 achdgs = 0 ## in degrees
                 
                 bs.traf.cre(acid=ownship_id, actype= self.drone_type, aclat=aclats, aclon=aclons,
-                    achdg=achdgs, acalt=ALT, acspd=self.init_speed)
+                    achdg=self.init_heading[idx], acalt=ALT, acspd=self.init_speed)
+                idx += 1
 
                 ## make intruder, dpsi is random
                 bs.traf.creconfs(acid=intruder_id, actype = self.drone_type, targetidx=bs.traf.id2idx(ownship_id),
-                                dpsi=np.random.uniform(0, 360), dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = self.init_speed)
+                                dpsi=self.init_heading[idx], dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = self.init_speed)
+                idx += 1
                 
                 counter += 1
 
@@ -83,7 +92,7 @@ class PairwiseHorConflict():
     def _get_states(self):
         return bs.traf
 
-    def step(self, resolution) -> np.ndarray:
+    def step(self, detection, resolution) -> np.ndarray:
         # set simulation time step, and enable fast-time running
         simdt = bs.settings.simdt
         bs.stack.stack(f"DT {simdt};FF")
@@ -92,6 +101,17 @@ class PairwiseHorConflict():
         ntraf = bs.traf.ntraf
 
         self.distance_array = np.zeros((self.nb_pair))
+
+        for i in range(ntraf):
+            target_id = bs.traf.id[i]
+
+            if resolution != None:
+                if(any(target_id in pair for pair in detection.confpairs)):
+                    bs.stack.stack(f"HDG {target_id}, {resolution[0][i]}")
+                    bs.stack.stack(f"SPD {target_id}, {resolution[1][i]}")
+                else:
+                    bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}") # the DRI
+                    bs.stack.stack(f"SPD {target_id}, {self.init_speed * 1.94384}")
 
         bs.sim.step()
 
