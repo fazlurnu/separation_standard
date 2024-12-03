@@ -3,14 +3,15 @@ import numpy as np
 from bluesky import stack
 from bluesky.tools import geo
 from bluesky.tools.aero import nm
-from bluesky.traffic.asas import ConflictDetection
 
-class StateBased(ConflictDetection):
+class StateBased():
     """ 
     Conflict Detection - State Based
 
     Taken from BlueSky library, but made "adjustable" as a separate script here
     """
+    # def __init__(self):
+        
     
     def detect(self, ownship, intruder, rpz, hpz, dtlookahead):
         ''' Conflict detection between ownship (traf) and intruder (traf/adsb).'''
@@ -108,16 +109,3 @@ class StateBased(ConflictDetection):
         return confpairs, lospairs, inconf, tcpamax, \
             qdr[swconfl], dist[swconfl], np.sqrt(dcpa2[swconfl]), \
                 tcpa[swconfl], tinconf[swconfl]
-
-
-try:
-    from bluesky.traffic.asas import cstatebased
-
-
-    class CStateBased(StateBased):
-        def __init__(self):
-            super().__init__()
-            self.detect = cstatebased.detect
-
-except ImportError:
-    pass
