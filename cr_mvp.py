@@ -1,10 +1,10 @@
 ''' Conflict resolution based on the Modified Voltage Potential algorithm. '''
 import numpy as np
 from bluesky import stack
-from bluesky.traffic.asas import ConflictResolution
+import bluesky as bs
+from bluesky.core import Entity
 
-
-class MVP(ConflictResolution):
+class MVP(Entity):
     """ 
     Conflict Resolution - Modified Voltage Potential
 
@@ -20,6 +20,30 @@ class MVP(ConflictResolution):
         self.swresohdg = False
         # [-] switch to limit resolution to the vertical direction
         self.swresovert = False
+
+        self.swprio = False  # switch priority on/off
+        self.priocode = ''  # select priority mode
+        self.resopairs = set()  # Resolved conflicts that are still before CPA
+
+        # Resolution factors:
+        # set < 1 to maneuver only a fraction of the resolution
+        # set > 1 to add a margin to separation values
+        self.resofach = bs.settings.asas_marh
+        self.resofacv = bs.settings.asas_marv
+
+        # Switches to guarantee last reso zone commands keep valid if cd zone changes
+        self.resodhrelative = True # Size of resolution zone dh, vertically, set relative to CD zone
+        self.resorrelative  = True # Size of resolution zone r, vertically, set relative to CD zone
+
+        with self.settrafarrays():
+            self.resooffac = np.array([], dtype=bool)
+            self.noresoac = np.array([], dtype=bool)
+            # whether the autopilot follows ASAS or not
+            self.active = np.array([], dtype=bool)
+            self.trk = np.array([])  # heading provided by the ASAS [deg]
+            self.tas = np.array([])  # speed provided by the ASAS (eas) [m/s]
+            self.alt = np.array([])  # alt provided by the ASAS [m]
+            self.vs = np.array([])  # vspeed provided by the ASAS [m/s]
 
     def setprio(self, flag=None, priocode=''):
         '''Set the prio switch and the type of prio '''
@@ -38,62 +62,6 @@ class MVP(ConflictResolution):
         if priocode not in options:
             return False, "Priority code Not Understood. Available Options: " + str(options)
         return super().setprio(flag, priocode)
-
-    @stack.command(name="RMETHH")
-    def setresometh(self, value:'txt'=''):
-        """ Processes the RMETHH command. Sets swresovert = False"""
-        # Acceptable arguments for this command
-        options = ["BOTH", "SPD", "HDG", "NONE", "ON", "OFF", "OF"]
-        if not value:
-            return True, "RMETHH [ON / BOTH / OFF / NONE / SPD / HDG]" + \
-                         "\nHorizontal resolution limitation is currently " + ("ON" if self.swresohoriz else "OFF") + \
-                         "\nSpeed resolution limitation is currently " + ("ON" if self.swresospd else "OFF") + \
-                         "\nHeading resolution limitation is currently " + \
-                ("ON" if self.swresohdg else "OFF")
-        if value not in options:
-            return False, "RMETH Not Understood" + "\nRMETHH [ON / BOTH / OFF / NONE / SPD / HDG]"
-        else:
-            if value == "ON" or value == "BOTH":
-                self.swresohoriz = True
-                self.swresospd = True
-                self.swresohdg = True
-                self.swresovert = False
-            elif value == "OFF" or value == "OF" or value == "NONE":
-                # Do NOT swtich off self.swresovert if value == OFF
-                self.swresohoriz = False
-                self.swresospd = False
-                self.swresohdg = False
-            elif value == "SPD":
-                self.swresohoriz = True
-                self.swresospd = True
-                self.swresohdg = False
-                self.swresovert = False
-            elif value == "HDG":
-                self.swresohoriz = True
-                self.swresospd = False
-                self.swresohdg = True
-                self.swresovert = False
-
-    @stack.command(name='RMETHV')
-    def setresometv(self, value:'txt'=''):
-        """ Processes the RMETHV command. Sets swresohoriz = False."""
-        # Acceptable arguments for this command
-        options = ["NONE", "ON", "OFF", "OF", "V/S"]
-        if not value:
-            return True, "RMETHV [ON / V/S / OFF / NONE]" + \
-                         "\nVertical resolution limitation is currently " + \
-                ("ON" if self.swresovert else "OFF")
-        if value not in options:
-            return False, f"RMETHV '{value}' Not Understood\nRMETHV [ON / V/S / OFF / NONE]"
-
-        if value == "ON" or value == "V/S":
-            self.swresovert = True
-            self.swresohoriz = False
-            self.swresospd = False
-            self.swresohdg = False
-        elif value == "OFF" or value == "OF" or value == "NONE":
-            # Do NOT swtich off self.swresohoriz if value == OFF
-            self.swresovert = False
 
     def applyprio(self, dv_mvp, dv1, dv2, vs1, vs2):
         ''' Apply the desired priority setting to the resolution '''

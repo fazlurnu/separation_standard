@@ -1,6 +1,5 @@
 ''' State-based conflict detection. '''
 import numpy as np
-from bluesky import stack
 from bluesky.tools import geo
 from bluesky.tools.aero import nm
 
@@ -10,11 +9,27 @@ class StateBased():
 
     Taken from BlueSky library, but made "adjustable" as a separate script here
     """
-    # def __init__(self):
+    def __init__(self):
+        self.rpz = -1
+        self.hpz = -1
+        self.dtlookahead = -1
+
+        self.confpairs = list()
+        self.lospairs = list()
+        self.qdr = np.array([])
+        self.dist = np.array([])
+        self.dcpa = np.array([])
+        self.tcpa = np.array([])
+        self.tLOS = np.array([])
         
     
     def detect(self, ownship, intruder, rpz, hpz, dtlookahead):
         ''' Conflict detection between ownship (traf) and intruder (traf/adsb).'''
+
+        self.rpz = np.array([rpz] * (ownship.ntraf))
+        self.hpz = np.array([hpz] * (ownship.ntraf))
+        self.dtlookahead = [dtlookahead] * (ownship.ntraf)
+
         # Identity matrix of order ntraf: avoid ownship-ownship detected conflicts
         I = np.eye(ownship.ntraf)
 
@@ -98,14 +113,17 @@ class StateBased():
         # Update conflict lists
         # --------------------------------------------------------------------------
         # Ownship conflict flag and max tCPA
-        inconf = np.any(swconfl, 1)
-        tcpamax = np.max(tcpa * swconfl, 1)
+        self.inconf = np.any(swconfl, 1)
+        self.tcpamax = np.max(tcpa * swconfl, 1)
 
         # Select conflicting pairs: each a/c gets their own record
-        confpairs = [(ownship.id[i], ownship.id[j]) for i, j in zip(*np.where(swconfl))]
+        self.confpairs = [(ownship.id[i], ownship.id[j]) for i, j in zip(*np.where(swconfl))]
         swlos = (dist < rpz) * (np.abs(dalt) < hpz)
-        lospairs = [(ownship.id[i], ownship.id[j]) for i, j in zip(*np.where(swlos))]
+        self.lospairs = [(ownship.id[i], ownship.id[j]) for i, j in zip(*np.where(swlos))]
 
-        return confpairs, lospairs, inconf, tcpamax, \
-            qdr[swconfl], dist[swconfl], np.sqrt(dcpa2[swconfl]), \
-                tcpa[swconfl], tinconf[swconfl]
+        self.qdr = qdr[swconfl]
+        self.dist = dist[swconfl]
+        
+        self.dcpa = np.sqrt(dcpa2[swconfl])
+        self.tcpa = tcpa[swconfl]
+        self.tLOS = tinconf[swconfl]
