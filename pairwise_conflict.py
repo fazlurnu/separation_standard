@@ -4,12 +4,23 @@ from geopy.distance import geodesic
 
 import bluesky as bs
 
+import json
+
 M2NM = 1/1852
 NM2M = 1852
 
 DCPA_M = 0
 
 ALT = 100
+
+## read params
+with open("pairwise_params.json", "r") as f:
+    params = json.load(f)
+
+# Access parameters
+start_lat = params["start_lat"]
+start_lon = params["start_lon"]
+delta_lat_lon = params["delta_lat_lon"]
 
 class PairwiseHorConflict():
     """ 
@@ -40,15 +51,11 @@ class PairwiseHorConflict():
         self.drone_type = drone_type
 
         self.init_heading = np.array([
-                                        0 if i % 2 == 0 else np.random.uniform(0, 360)
+                                        0 if i % 2 == 0 else np.random.randint(0, 360)
                                         for i in range(2 * pair_width * pair_height)
                                     ])
         print(self.init_heading)
         bs.init(mode='sim', detached=True)
-
-        start_lat = 52.3
-        start_lon = 4.7
-        delta_lat_lon = 0.1
 
         # set conflict definition
         bs.settings.asas_pzr = self.asas_pzr_m * M2NM
