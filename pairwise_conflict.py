@@ -48,7 +48,7 @@ class PairwiseHorConflict():
 
         start_lat = 52.3
         start_lon = 4.7
-        delta_lat_lon = 0.02
+        delta_lat_lon = 0.1
 
         # set conflict definition
         bs.settings.asas_pzr = self.asas_pzr_m * M2NM
@@ -84,9 +84,7 @@ class PairwiseHorConflict():
             bs.stack.stack("ASAS ON")
             bs.stack.stack("RESO MVP")
             
-    def reset(self, seed=None, options=None) -> None:
-        super().reset(seed=seed)
-        
+    def reset(self, seed=None, options=None) -> None:      
         bs.traf.reset()
 
     def _get_states(self):

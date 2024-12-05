@@ -21,7 +21,8 @@ class StateBased():
         self.dcpa = np.array([])
         self.tcpa = np.array([])
         self.tLOS = np.array([])
-        
+
+        self.confpairs_unique = {}
     
     def detect(self, ownship, intruder, rpz, hpz, dtlookahead):
         ''' Conflict detection between ownship (traf) and intruder (traf/adsb).'''
@@ -118,6 +119,7 @@ class StateBased():
 
         # Select conflicting pairs: each a/c gets their own record
         self.confpairs = [(ownship.id[i], ownship.id[j]) for i, j in zip(*np.where(swconfl))]
+        self.confpairs_unique = {frozenset(pair) for pair in self.confpairs}
         swlos = (dist < rpz) * (np.abs(dalt) < hpz)
         self.lospairs = [(ownship.id[i], ownship.id[j]) for i, j in zip(*np.where(swlos))]
 
