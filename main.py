@@ -28,13 +28,13 @@ height = 10
 
 horizontal_sep = 50
 lookahead_time = 30 ## seconds
-tmax = 4 * lookahead_time ## seconds
-minsimtime = 10 ## seconds
+tmax = 600 ## seconds
+minsimtime = tmax/30 ## seconds
 
-init_speed = 18 ## in m/s
+init_speed = 20 ## in m/s
 aircraft_type = 'M600'
 
-show_viz = False
+show_viz = True
 
 start_time = time.time()
 
@@ -64,7 +64,6 @@ lon_list = []
 
 while ((sim_timer_second < tmax) & (still_in_conflict)):
     states = pairwise._get_states()
-    conf_detection.detect(states, states, horizontal_sep, 100, lookahead_time)
     conf_detection.detect(states, states, horizontal_sep, 100, lookahead_time)
     reso = conf_resolution.resolve(conf_detection, states, states)
     
@@ -98,6 +97,7 @@ end_time = time.time()
 
 execution_time = end_time - start_time
 print(f"Execution time: {execution_time} seconds")
+print(f"Simulation time: {sim_timer_second} seconds")
 
 if(show_viz):
     import matplotlib.pyplot as plt
