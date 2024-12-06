@@ -3,6 +3,7 @@ import bluesky as bs
 
 from cd_statebased import StateBased
 from cr_mvp import MVP
+from cns_adsl import ADSL
 
 import time
 
@@ -27,98 +28,112 @@ width = 10
 height = 10
 
 horizontal_sep = 50
-lookahead_time = 30 ## seconds
-tmax = 600 ## seconds
+lookahead_time = 15 ## seconds
+tmax = 4 * lookahead_time ## seconds
 minsimtime = tmax/30 ## seconds
 
-init_speed = 20 ## in m/s
+init_speed = 10.2899 ## in m/s
 aircraft_type = 'M600'
 
-show_viz = True
+show_viz = False
 
-start_time = time.time()
+los_list = []
+nb_of_repetition = 10
 
-## initiate things
-pairwise = PairwiseHorConflict(pair_width=width, pair_height=height,
-                            asas_pzr_m=horizontal_sep, dtlookahead=lookahead_time,
-                            init_speed=init_speed, drone_type= aircraft_type)
+for i in range(nb_of_repetition):
+    start_time = time.time()
 
-conf_detection = StateBased()
-conf_resolution = MVP()
+    ## initiate things
+    pairwise = PairwiseHorConflict(pair_width=width, pair_height=height,
+                                asas_pzr_m=horizontal_sep, dtlookahead=lookahead_time,
+                                init_speed=init_speed, drone_type= aircraft_type)
 
-## simulations
-simdt = bs.settings.simdt
-t = np.arange(0, tmax + simdt, simdt)
-distance_array = []
+    conf_detection = StateBased()
+    conf_resolution = MVP()
+    adsl = ADSL(30)
 
-lat_array = []
-lon_array = []
+    ## simulations
+    simdt = bs.settings.simdt
+    t = np.arange(0, tmax + simdt, simdt)
+    distance_array = []
 
-sim_timer_second = 0
-still_in_conflict = True
-last_in_conflicts = []
-nb_check_last_in_conflicts = 20 ## val * simdt is the duration of the checking
+    lat_array = []
+    lon_array = []
 
-lat_list = []
-lon_list = []
+    sim_timer_second = 0
+    still_in_conflict = True
+    last_in_conflicts = []
+    nb_check_last_in_conflicts = 20 ## val * simdt is the duration of the checking
 
-while ((sim_timer_second < tmax) & (still_in_conflict)):
-    states = pairwise._get_states()
-    conf_detection.detect(states, states, horizontal_sep, 100, lookahead_time)
-    reso = conf_resolution.resolve(conf_detection, states, states)
-    
-    distance_ = pairwise.step(conf_detection, reso)
-    distance_array.append(distance_)
+    lat_list = []
+    lon_list = []
+
+    while ((sim_timer_second < tmax) & (still_in_conflict)):
+        states = pairwise._get_states()
+        adsl._get_noisy_pos(states)
+
+        # conf_detection.detect(states, states, horizontal_sep, 100, lookahead_time)
+        conf_detection.detect(adsl, adsl, horizontal_sep, 100, lookahead_time)
+        reso = conf_resolution.resolve(conf_detection, states, states)
         
-    sim_timer_second += simdt
+        distance_ = pairwise.step(conf_detection, reso)
+        distance_array.append(distance_)
+            
+        sim_timer_second += simdt
 
-    lat_list.append(states.lat)
-    lon_list.append(states.lon)
+        lat_list.append(states.lat)
+        lon_list.append(states.lon)
 
-    if(sim_timer_second > minsimtime):
-        ## later here add also the conflicting based on ADS-B
-        in_conflict = len(conf_detection.confpairs_unique) > 0
+        if(sim_timer_second > minsimtime):
+            ## later here add also the conflicting based on ADS-B
+            in_conflict = len(conf_detection.confpairs_unique) > 0
 
-        last_in_conflicts.append(in_conflict)
-        if len(last_in_conflicts) > nb_check_last_in_conflicts:
-            last_in_conflicts.pop(0)
+            last_in_conflicts.append(in_conflict)
+            if len(last_in_conflicts) > nb_check_last_in_conflicts:
+                last_in_conflicts.pop(0)
 
-        still_in_conflict = any(last_in_conflicts)
+            still_in_conflict = any(last_in_conflicts)
 
-## calcualte the metrics
-distance_cpa = np.min(distance_array, axis=0)
+    ## calcualte the metrics
+    distance_cpa = np.min(distance_array, axis=0)
 
-los = (distance_cpa < horizontal_sep).sum()
-ipr = ((width*height) - los)/(width*height)
+    los = (distance_cpa < horizontal_sep).sum()
+    ipr = ((width*height) - los)/(width*height)
 
-print(f"IPR: {ipr}, LOS: {los}")
-print(f"Distance CPA: {distance_cpa[distance_cpa < horizontal_sep]}")
-end_time = time.time()
+    los_list.append(los)
+    print(f"IPR: {ipr}, LOS: {los}")
+    print(f"Distance CPA: {distance_cpa[distance_cpa < horizontal_sep]}")
+    end_time = time.time()
 
-execution_time = end_time - start_time
-print(f"Execution time: {execution_time} seconds")
-print(f"Simulation time: {sim_timer_second} seconds")
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time} seconds")
+    print(f"Simulation time: {sim_timer_second} seconds")
 
-if(show_viz):
-    import matplotlib.pyplot as plt
+    if(show_viz):
+        import matplotlib.pyplot as plt
 
-    lon_list = np.array(lon_list)
-    lat_list = np.array(lat_list)
+        lon_list = np.array(lon_list)
+        lat_list = np.array(lat_list)
 
-    plt.figure(figsize=(10, 5))  # Create a new figure for each plot
+        plt.figure(figsize=(10, 5))  # Create a new figure for each plot
 
-    for i in range(lon_list.shape[1]):  # Loop over columns (50 iterations)
-        plt.plot(lon_list[:, i], lat_list[:, i], color = 'tab:blue')  # Plot all rows against this column
-        plt.xlabel("Longitude")
-        plt.ylabel("Latitude")
+        for i in range(lon_list.shape[1]):  # Loop over columns (50 iterations)
+            plt.plot(lon_list[:, i], lat_list[:, i], color = 'tab:blue')  # Plot all rows against this column
+            plt.xlabel("Longitude")
+            plt.ylabel("Latitude")
 
-    for pair in conf_detection.confpairs_unique:
+        for pair in conf_detection.confpairs_unique:
 
-        idx = states.id2idx(list(pair)[0])
+            idx = states.id2idx(list(pair)[0])
 
-        plt.plot([states.lon[idx] - delta_lat_lon/2, states.lon[idx] + delta_lat_lon/2], [states.lat[idx], states.lat[idx]], color = 'red', alpha = 0.4)
-        plt.plot([states.lon[idx], states.lon[idx]], [states.lat[idx] - delta_lat_lon/2, states.lat[idx] + delta_lat_lon/2], color = 'red', alpha = 0.4)
+            plt.plot([states.lon[idx] - delta_lat_lon/2, states.lon[idx] + delta_lat_lon/2], [states.lat[idx], states.lat[idx]], color = 'red', alpha = 0.4)
+            plt.plot([states.lon[idx], states.lon[idx]], [states.lat[idx] - delta_lat_lon/2, states.lat[idx] + delta_lat_lon/2], color = 'red', alpha = 0.4)
 
-    plt.show()  # Display the plot
+        plt.show()  # Display the plot
 
-pairwise.reset()
+    pairwise.reset()
+
+total_los = sum(los_list)
+total_ipr = ((width*height*nb_of_repetition) - total_los)/(width*height*nb_of_repetition)
+
+print(f"Final IPR: {total_ipr}. Final LOS: {total_los}")
