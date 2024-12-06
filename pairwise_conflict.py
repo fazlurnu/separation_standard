@@ -54,7 +54,7 @@ class PairwiseHorConflict():
                                         0 if i % 2 == 0 else np.random.randint(0, 360)
                                         for i in range(2 * pair_width * pair_height)
                                     ])
-        print(self.init_heading)
+        
         bs.init(mode='sim', detached=True)
 
         # set conflict definition
