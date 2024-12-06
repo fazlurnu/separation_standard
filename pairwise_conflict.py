@@ -107,6 +107,8 @@ class PairwiseHorConflict():
 
         self.distance_array = np.zeros((self.nb_pair))
 
+        bs.sim.step()
+        
         for i in range(ntraf):
             target_id = bs.traf.id[i]
 
@@ -117,8 +119,6 @@ class PairwiseHorConflict():
                 else:
                     bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}") # the DRI
                     bs.stack.stack(f"SPD {target_id}, {self.init_speed * 1.94384}")
-
-        bs.sim.step()
 
         for pair in range(self.nb_pair):
             ownship_id = f"DRO{pair:03}"

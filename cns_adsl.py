@@ -24,6 +24,14 @@ class ADSL():
 
         
     def _get_noisy_pos(self, states):
+        self.ntraf = states.ntraf
+        self.alt = states.alt.copy()
+        self.hdg = states.hdg.copy()
+        self.trk = states.hdg.copy()
+        self.gs = states.gs.copy()
+        self.vs = states.vs.copy()
+        self.id = states.id.copy()
+
         lat = states.lat.copy()
         lon = states.lon.copy()
 
