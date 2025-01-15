@@ -7,10 +7,12 @@ class ADSL():
     """ 
     
     """
-    def __init__(self, confidence_interval):
+    def __init__(self, confidence_interval, spd_uncertainty_sigma, hdg_uncertainty_sigma):
         # Calculate standard deviation from confidence interval
         # For 2D, 95% confidence interval is approximately 2.448 standard deviations
         self.std_dev = confidence_interval / 2.448
+        self.spd_uncertainty_sigma = spd_uncertainty_sigma
+        self.hdg_uncertainty_sigma = hdg_uncertainty_sigma
 
         self.ntraf = 0
         self.lat     = np.array([])  # latitude [deg]
@@ -21,7 +23,6 @@ class ADSL():
         self.gs      = np.array([])  # ground speed [m/s]
         self.vs      = np.array([])  # vertical speed [m/s]
         self.id      = []  # identifier (string)
-
         
     def _get_noisy_pos(self, states):
         self.ntraf = states.ntraf
@@ -29,8 +30,16 @@ class ADSL():
         self.hdg = states.hdg.copy()
         self.trk = states.hdg.copy()
         self.gs = states.gs.copy()
+        self.gseast = states.gseast.copy()
+        self.gsnorth = states.gsnorth.copy()
+        self.tas = states.tas.copy()
+
         self.vs = states.vs.copy()
         self.id = states.id.copy()
+
+        self.perf = states.perf
+        self.ap = states.ap
+        self.selalt = states.selalt
 
         lat = states.lat.copy()
         lon = states.lon.copy()
@@ -58,3 +67,21 @@ class ADSL():
         # Noisy positions
         self.lat = lat + lat_noise
         self.lon = lon + lon_noise
+
+    def _get_noisy_hdg(self, states):
+        self.ntraf = states.ntraf
+
+        trk      = states.trk
+        self.trk = trk + np.random.normal(0, self.hdg_uncertainty_sigma, self.ntraf)
+        self.gsnorth = self.gs * np.cos(np.deg2rad(self.trk))
+        self.gseast  = self.gs * np.sin(np.deg2rad(self.trk))
+
+    def _get_noisy_spd(self, states):
+        self.ntraf = states.ntraf    
+        
+        gs      = states.gs
+        self.gs = gs + np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf)
+        self.gsnorth = gs * np.cos(np.deg2rad(self.trk))
+        self.gseast  = gs * np.sin(np.deg2rad(self.trk))
+        # print(self.spd_uncertainty_sigma)
+        # print(np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf))
