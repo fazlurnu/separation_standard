@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from geopy.distance import geodesic
+from bluesky.tools import geo
+
+from bluesky.tools.aero import cas2tas, casormach2tas, fpm, kts
 
 import bluesky as bs
 
@@ -27,10 +30,6 @@ class PairwiseHorConflict():
     PairwiseHorConflict
 
     TODO:
-    - make a conflict detection class outside this script
-    - call this conflict detection script here
-    - make a conflict resolution class (MVP) outside this script
-    - call this conflict resolution script here
     - make an ADS-L class -> position and communication uncertainty
     - implement the ADS-L class -> for instance bs.traf.lat + noise (position)
     - implement the ADS-L class -> for instnace if(random() < reception_prob): update_pos (communication uncertainty)
@@ -39,7 +38,7 @@ class PairwiseHorConflict():
     def __init__(self, 
                 pair_width: int, pair_height: int,      ## number of spawned aircraft
                 asas_pzr_m: float, dtlookahead: float,  ## separation standard params
-                init_speed: float, drone_type: str,     ## aircraft params
+                init_speed_ownship: float, init_speed_intruder: float, drone_type: str,     ## aircraft params
                 inherent_asas_on: bool = False) -> None:
         
         self.nb_pair = pair_width * pair_height
@@ -47,7 +46,8 @@ class PairwiseHorConflict():
         self.asas_pzr_m = asas_pzr_m
         self.dtlookahead = dtlookahead
 
-        self.init_speed = init_speed
+        self.init_speed_ownship = init_speed_ownship
+        self.init_speed_intruder = init_speed_intruder
         self.drone_type = drone_type
 
         self.init_heading = np.array([
@@ -74,15 +74,16 @@ class PairwiseHorConflict():
 
                 aclats = start_lat + i * delta_lat_lon
                 aclons = start_lon + j * delta_lat_lon
-                achdgs = 0 ## in degrees
                 
+                ## the heading of this one is always zero
                 bs.traf.cre(acid=ownship_id, actype= self.drone_type, aclat=aclats, aclon=aclons,
-                    achdg=self.init_heading[idx], acalt=ALT, acspd=self.init_speed)
+                    achdg=self.init_heading[idx], acalt=ALT, acspd=self.init_speed_ownship)
+                
                 idx += 1
 
                 ## make intruder, dpsi is random
                 bs.traf.creconfs(acid=intruder_id, actype = self.drone_type, targetidx=bs.traf.id2idx(ownship_id),
-                                dpsi=self.init_heading[idx], dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = self.init_speed)
+                                dpsi=self.init_heading[idx], dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = self.init_speed_intruder)
                 idx += 1
                 
                 counter += 1
@@ -115,11 +116,12 @@ class PairwiseHorConflict():
             if resolution != None:
                 if(any(target_id in pair for pair in detection.confpairs)):
                     bs.stack.stack(f"HDG {target_id}, {resolution[0][i]}")
-                    bs.stack.stack(f"SPD {target_id}, {resolution[1][i]}")
+                    bs.stack.stack(f"SPD {target_id}, {resolution[1][i] / kts}")
                 else:
                     bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}") # the DRI
-                    bs.stack.stack(f"SPD {target_id}, {self.init_speed * 1.94384}")
+                    bs.stack.stack(f"SPD {target_id}, {self.init_speed_ownship}")
 
+        ## FIX HERE THE DISTANCE CALCULATION
         for pair in range(self.nb_pair):
             ownship_id = f"DRO{pair:03}"
             intruder_id = f"DRI{pair:03}"
@@ -132,7 +134,10 @@ class PairwiseHorConflict():
             lon_dri_0 = bs.traf.lon[bs.traf.id2idx(intruder_id)]
             point_dri = (lat_dri_0, lon_dri_0)
 
+            qdr, dist = geo.kwikqdrdist_matrix(np.asmatrix(lat_dro_0), np.asmatrix(lon_dro_0),
+                                    np.asmatrix(lat_dri_0), np.asmatrix(lon_dri_0))
+            
             distance = geodesic(point_dro, point_dri).meters
-            self.distance_array[pair] = distance
+            self.distance_array[pair] = dist * NM2M
         
         return np.array(self.distance_array)
