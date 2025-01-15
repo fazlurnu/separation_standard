@@ -32,13 +32,22 @@ lookahead_time = 15 ## seconds
 tmax = 4 * lookahead_time ## seconds
 minsimtime = tmax/30 ## seconds
 
-init_speed = 10.2899 ## in m/s
+init_speed_ownship = 20 ## in kts
+init_speed_intruder = 15 ## in kts
 aircraft_type = 'M600'
+
+pos_uncertainty_sigma = 5
+hdg_uncertainty_sigma = 2
+spd_uncertainty_sigma = 3
 
 show_viz = False
 
 los_list = []
-nb_of_repetition = 10
+nb_of_repetition = 5
+
+## TO DO:
+## Implement ownship only or intruder only for the hdg and spd uncertainty
+## Also add the conflict logger
 
 for i in range(nb_of_repetition):
     start_time = time.time()
@@ -46,11 +55,12 @@ for i in range(nb_of_repetition):
     ## initiate things
     pairwise = PairwiseHorConflict(pair_width=width, pair_height=height,
                                 asas_pzr_m=horizontal_sep, dtlookahead=lookahead_time,
-                                init_speed=init_speed, drone_type= aircraft_type)
+                                init_speed_ownship=init_speed_ownship, init_speed_intruder=init_speed_intruder,
+                                drone_type= aircraft_type)
 
     conf_detection = StateBased()
     conf_resolution = MVP()
-    adsl = ADSL(30)
+    adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
 
     ## simulations
     simdt = bs.settings.simdt
@@ -71,10 +81,13 @@ for i in range(nb_of_repetition):
     while ((sim_timer_second < tmax) & (still_in_conflict)):
         states = pairwise._get_states()
         adsl._get_noisy_pos(states)
-
-        # conf_detection.detect(states, states, horizontal_sep, 100, lookahead_time)
-        conf_detection.detect(adsl, adsl, horizontal_sep, 100, lookahead_time)
-        reso = conf_resolution.resolve(conf_detection, states, states)
+        adsl._get_noisy_hdg(states)
+        adsl._get_noisy_spd(states)
+        
+        ## make sure the conf detect and reso only done every asas_dt
+        if(round(sim_timer_second, 2) % bs.settings.asas_dt == 0):
+            conf_detection.detect(adsl, adsl, horizontal_sep, 100, lookahead_time)
+            reso = conf_resolution.resolve(conf_detection, adsl, adsl)
         
         distance_ = pairwise.step(conf_detection, reso)
         distance_array.append(distance_)
@@ -84,15 +97,16 @@ for i in range(nb_of_repetition):
         lat_list.append(states.lat)
         lon_list.append(states.lon)
 
-        if(sim_timer_second > minsimtime):
-            ## later here add also the conflicting based on ADS-B
-            in_conflict = len(conf_detection.confpairs_unique) > 0
+        ## this might be useful in case want to optimize the sim time
+        # if(sim_timer_second >= minsimtime):
+        #     ## later here add also the conflicting based on ADS-B
+        #     in_conflict = len(conf_detection.confpairs_unique) > 0
 
-            last_in_conflicts.append(in_conflict)
-            if len(last_in_conflicts) > nb_check_last_in_conflicts:
-                last_in_conflicts.pop(0)
+        #     last_in_conflicts.append(in_conflict)
+        #     if len(last_in_conflicts) > nb_check_last_in_conflicts:
+        #         last_in_conflicts.pop(0)
 
-            still_in_conflict = any(last_in_conflicts)
+        #     still_in_conflict = any(last_in_conflicts)
 
     ## calcualte the metrics
     distance_cpa = np.min(distance_array, axis=0)
