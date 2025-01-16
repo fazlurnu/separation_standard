@@ -30,7 +30,7 @@ class MVP(Entity):
         # set > 1 to add a margin to separation values
         self.resofach = bs.settings.asas_marh
         self.resofacv = bs.settings.asas_marv
-
+        
         # Switches to guarantee last reso zone commands keep valid if cd zone changes
         self.resodhrelative = True # Size of resolution zone dh, vertically, set relative to CD zone
         self.resorrelative  = True # Size of resolution zone r, vertically, set relative to CD zone

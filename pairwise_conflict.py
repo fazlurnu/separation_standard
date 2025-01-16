@@ -30,8 +30,7 @@ class PairwiseHorConflict():
     PairwiseHorConflict
 
     TODO:
-    - make an ADS-L class -> position and communication uncertainty
-    - implement the ADS-L class -> for instance bs.traf.lat + noise (position)
+    - make an ADS-L class -> communication uncertainty
     - implement the ADS-L class -> for instnace if(random() < reception_prob): update_pos (communication uncertainty)
     """
 
@@ -39,6 +38,7 @@ class PairwiseHorConflict():
                 pair_width: int, pair_height: int,      ## number of spawned aircraft
                 asas_pzr_m: float, dtlookahead: float,  ## separation standard params
                 init_speed_ownship: float, init_speed_intruder: float, drone_type: str,     ## aircraft params
+                init_dpsi: float = None,
                 inherent_asas_on: bool = False) -> None:
         
         self.nb_pair = pair_width * pair_height
@@ -50,12 +50,16 @@ class PairwiseHorConflict():
         self.init_speed_intruder = init_speed_intruder
         self.drone_type = drone_type
 
-        self.init_heading = np.array([
-                                        0 if i % 2 == 0 else np.random.randint(0, 360)
+        if(init_dpsi != None):
+            self.init_heading = np.array([
+                                        0 if i % 2 == 0 else init_dpsi
                                         for i in range(2 * pair_width * pair_height)
                                     ])
-        
-        bs.init(mode='sim', detached=True)
+        else:
+            self.init_heading = np.array([
+                                            0 if i % 2 == 0 else np.random.randint(0, 360)
+                                            for i in range(2 * pair_width * pair_height)
+                                        ])
 
         # set conflict definition
         bs.settings.asas_pzr = self.asas_pzr_m * M2NM
@@ -113,31 +117,38 @@ class PairwiseHorConflict():
         for i in range(ntraf):
             target_id = bs.traf.id[i]
 
+            ## in here implement the resumenav function
             if resolution != None:
                 if(any(target_id in pair for pair in detection.confpairs)):
                     bs.stack.stack(f"HDG {target_id}, {resolution[0][i]}")
                     bs.stack.stack(f"SPD {target_id}, {resolution[1][i] / kts}")
                 else:
                     bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}") # the DRI
+                    if("DRO" in target_id):
+                        bs.stack.stack(f"SPD {target_id}, {self.init_speed_ownship}")
+                    else:
+                        bs.stack.stack(f"SPD {target_id}, {self.init_speed_intruder}")
+            else:
+                bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}") # the DRI
+                if("DRO" in target_id):
                     bs.stack.stack(f"SPD {target_id}, {self.init_speed_ownship}")
+                else: 
+                    bs.stack.stack(f"SPD {target_id}, {self.init_speed_intruder}")
 
         ## FIX HERE THE DISTANCE CALCULATION
         for pair in range(self.nb_pair):
             ownship_id = f"DRO{pair:03}"
             intruder_id = f"DRI{pair:03}"
-
+            
             lat_dro_0 = bs.traf.lat[bs.traf.id2idx(ownship_id)]
             lon_dro_0 = bs.traf.lon[bs.traf.id2idx(ownship_id)]
-            point_dro = (lat_dro_0, lon_dro_0)
 
             lat_dri_0 = bs.traf.lat[bs.traf.id2idx(intruder_id)]
             lon_dri_0 = bs.traf.lon[bs.traf.id2idx(intruder_id)]
-            point_dri = (lat_dri_0, lon_dri_0)
 
             qdr, dist = geo.kwikqdrdist_matrix(np.asmatrix(lat_dro_0), np.asmatrix(lon_dro_0),
                                     np.asmatrix(lat_dri_0), np.asmatrix(lon_dri_0))
             
-            distance = geodesic(point_dro, point_dri).meters
             self.distance_array[pair] = dist * NM2M
         
         return np.array(self.distance_array)
