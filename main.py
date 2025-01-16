@@ -1,3 +1,5 @@
+import pandas as pd
+
 from pairwise_conflict import *
 import bluesky as bs
 
@@ -27,127 +29,154 @@ pairlist = []
 width = 10
 height = 10
 
-horizontal_sep = 50
+horizontal_sep = 50 ## in meters
 lookahead_time = 15 ## seconds
 tmax = 4 * lookahead_time ## seconds
 minsimtime = tmax/30 ## seconds
 
 init_speed_ownship = 20 ## in kts
-init_speed_intruder = 15 ## in kts
 aircraft_type = 'M600'
 
-pos_uncertainty_sigma = 5
-hdg_uncertainty_sigma = 2
-spd_uncertainty_sigma = 3
+pos_uncertainty_sigma = 15
+hdg_uncertainty_sigma = 0
+spd_uncertainty_sigma = 0
 
-show_viz = False
+show_viz = True
 
-los_list = []
 nb_of_repetition = 5
 
 ## TO DO:
 ## Implement ownship only or intruder only for the hdg and spd uncertainty
 ## Also add the conflict logger
+## Add resumenav in the code
 
-for i in range(nb_of_repetition):
-    start_time = time.time()
+results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
+bs.init(mode='sim', detached=True)
 
-    ## initiate things
-    pairwise = PairwiseHorConflict(pair_width=width, pair_height=height,
-                                asas_pzr_m=horizontal_sep, dtlookahead=lookahead_time,
-                                init_speed_ownship=init_speed_ownship, init_speed_intruder=init_speed_intruder,
-                                drone_type= aircraft_type)
+conf_detection = StateBased()
+conf_resolution = MVP()
+adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
 
-    conf_detection = StateBased()
-    conf_resolution = MVP()
-    adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
-
-    ## simulations
-    simdt = bs.settings.simdt
-    t = np.arange(0, tmax + simdt, simdt)
-    distance_array = []
-
-    lat_array = []
-    lon_array = []
-
-    sim_timer_second = 0
-    still_in_conflict = True
-    last_in_conflicts = []
-    nb_check_last_in_conflicts = 20 ## val * simdt is the duration of the checking
-
-    lat_list = []
-    lon_list = []
-
-    while ((sim_timer_second < tmax) & (still_in_conflict)):
-        states = pairwise._get_states()
-        adsl._get_noisy_pos(states)
-        adsl._get_noisy_hdg(states)
-        adsl._get_noisy_spd(states)
+for init_speed_intruder in range(5, 36, 10):
+    for dpsi in range(0, 181, 2):
+        los_list = []
+        distance_cpa_list = []
         
-        ## make sure the conf detect and reso only done every asas_dt
-        if(round(sim_timer_second, 2) % bs.settings.asas_dt == 0):
-            conf_detection.detect(adsl, adsl, horizontal_sep, 100, lookahead_time)
-            reso = conf_resolution.resolve(conf_detection, adsl, adsl)
-        
-        distance_ = pairwise.step(conf_detection, reso)
-        distance_array.append(distance_)
+        for i in range(nb_of_repetition):
+            start_time = time.time()
+
+            ## initiate things
+            pairwise = PairwiseHorConflict(pair_width=width, pair_height=height,
+                                        asas_pzr_m=horizontal_sep, dtlookahead=lookahead_time,
+                                        init_speed_ownship=init_speed_ownship, init_speed_intruder=init_speed_intruder,
+                                        init_dpsi = dpsi,
+                                        drone_type= aircraft_type)
+
+            ## simulations
+            simdt = bs.settings.simdt
+            t = np.arange(0, tmax + simdt, simdt)
+            distance_array = []
+
+
+            sim_timer_second = 0
+            still_in_conflict = True
+            last_in_conflicts = []
+            nb_check_last_in_conflicts = 20 ## val * simdt is the duration of the checking
+
+            lat_list = []
+            lon_list = []
+
+            lat_list_noise = []
+            lon_list_noise = []
+
+            while ((sim_timer_second < tmax) & (still_in_conflict)):
+                states = pairwise._get_states()
+                
+                ## make sure the conf detect and reso only done every asas_dt
+                if(round(sim_timer_second, 2) % bs.settings.asas_dt == 0):
+                    adsl._get_noisy_pos(states)
+                    adsl._get_noisy_hdg(states)
+                    adsl._get_noisy_spd(states)
+
+                    # print(round(sim_timer_second, 2), (round(sim_timer_second, 2) % bs.settings.asas_dt == 0))
+                    conf_detection.detect(adsl, adsl, horizontal_sep, 100, lookahead_time)
+                    reso = conf_resolution.resolve(conf_detection, adsl, adsl)
+
+                distance_ = pairwise.step(conf_detection, reso)
+                    
+                distance_array.append(distance_)
+                    
+                sim_timer_second += simdt
+
+                lat_list.append(states.lat)
+                lon_list.append(states.lon)
+
+                lat_list_noise.append(adsl.lat)
+                lon_list_noise.append(adsl.lon)
+
+                ## this might be useful in case want to optimize the sim time but still wrong
+                # if(sim_timer_second > minsimtime):
+                #     ## later here add also the conflicting based on ADS-B
+                #     in_conflict = len(conf_detection.confpairs_unique) > 0
+
+                #     last_in_conflicts.append(in_conflict)
+                #     if len(last_in_conflicts) > nb_check_last_in_conflicts:
+                #         last_in_conflicts.pop(0)
+
+                #     still_in_conflict = any(last_in_conflicts)
+
+            ## calcualte the metrics
+            distance_cpa = np.min(distance_array, axis=0)
+
+            los = (distance_cpa < horizontal_sep).sum()
+            ipr = ((width*height) - los)/(width*height)
+
+            los_list.append(los)
+            distance_cpa_list.append(distance_cpa[distance_cpa < horizontal_sep])
             
-        sim_timer_second += simdt
+            print(f"DPSI: {dpsi}, IPR: {ipr}, LOS: {los}")
+            print(f"Distance CPA: {distance_cpa[distance_cpa < horizontal_sep]}")
+            end_time = time.time()
 
-        lat_list.append(states.lat)
-        lon_list.append(states.lon)
+            execution_time = end_time - start_time
+            print(f"Execution time: {execution_time} seconds")
+            print(f"Simulation time: {sim_timer_second} seconds")
 
-        ## this might be useful in case want to optimize the sim time
-        # if(sim_timer_second >= minsimtime):
-        #     ## later here add also the conflicting based on ADS-B
-        #     in_conflict = len(conf_detection.confpairs_unique) > 0
+            if(show_viz):
+                import matplotlib.pyplot as plt
 
-        #     last_in_conflicts.append(in_conflict)
-        #     if len(last_in_conflicts) > nb_check_last_in_conflicts:
-        #         last_in_conflicts.pop(0)
+                lon_list = np.array(lon_list)
+                lat_list = np.array(lat_list)
 
-        #     still_in_conflict = any(last_in_conflicts)
+                lon_list_noise = np.array(lon_list_noise)
+                lat_list_noise = np.array(lat_list_noise)
 
-    ## calcualte the metrics
-    distance_cpa = np.min(distance_array, axis=0)
+                plt.figure(figsize=(10, 5))  # Create a new figure for each plot
 
-    los = (distance_cpa < horizontal_sep).sum()
-    ipr = ((width*height) - los)/(width*height)
+                for i in range(lon_list.shape[1]):  # Loop over columns (50 iterations)
+                    plt.plot(lon_list[:, i], lat_list[:, i], color = 'tab:blue')  # Plot all rows against this column
+                    plt.scatter(lon_list_noise[:, i], lat_list_noise[:, i], color = 'tab:red', alpha = 0.2)  # Plot all rows against this column
+                    plt.xlabel("Longitude")
+                    plt.ylabel("Latitude")
 
-    los_list.append(los)
-    print(f"IPR: {ipr}, LOS: {los}")
-    print(f"Distance CPA: {distance_cpa[distance_cpa < horizontal_sep]}")
-    end_time = time.time()
+                for pair in conf_detection.confpairs_unique:
 
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time} seconds")
-    print(f"Simulation time: {sim_timer_second} seconds")
+                    idx = states.id2idx(list(pair)[0])
 
-    if(show_viz):
-        import matplotlib.pyplot as plt
+                    plt.plot([states.lon[idx] - delta_lat_lon/2, states.lon[idx] + delta_lat_lon/2], [states.lat[idx], states.lat[idx]], color = 'red', alpha = 0.4)
+                    plt.plot([states.lon[idx], states.lon[idx]], [states.lat[idx] - delta_lat_lon/2, states.lat[idx] + delta_lat_lon/2], color = 'red', alpha = 0.4)
 
-        lon_list = np.array(lon_list)
-        lat_list = np.array(lat_list)
+                plt.show()  # Display the plot
 
-        plt.figure(figsize=(10, 5))  # Create a new figure for each plot
+            pairwise.reset()
 
-        for i in range(lon_list.shape[1]):  # Loop over columns (50 iterations)
-            plt.plot(lon_list[:, i], lat_list[:, i], color = 'tab:blue')  # Plot all rows against this column
-            plt.xlabel("Longitude")
-            plt.ylabel("Latitude")
+        total_los = sum(los_list)
+        total_ipr = ((width*height*nb_of_repetition) - total_los)/(width*height*nb_of_repetition)
 
-        for pair in conf_detection.confpairs_unique:
+        results['angles'].append(dpsi)
+        results['ipr'].append(total_ipr)
+        results['los_count'].append(total_los)
+        results['distance_cpa'].append(distance_cpa_list)
 
-            idx = states.id2idx(list(pair)[0])
-
-            plt.plot([states.lon[idx] - delta_lat_lon/2, states.lon[idx] + delta_lat_lon/2], [states.lat[idx], states.lat[idx]], color = 'red', alpha = 0.4)
-            plt.plot([states.lon[idx], states.lon[idx]], [states.lat[idx] - delta_lat_lon/2, states.lat[idx] + delta_lat_lon/2], color = 'red', alpha = 0.4)
-
-        plt.show()  # Display the plot
-
-    pairwise.reset()
-
-total_los = sum(los_list)
-total_ipr = ((width*height*nb_of_repetition) - total_los)/(width*height*nb_of_repetition)
-
-print(f"Final IPR: {total_ipr}. Final LOS: {total_los}")
+    df = pd.DataFrame.from_dict(results)
+    df.to_csv(f'results_{init_speed_intruder}_{pos_uncertainty_sigma}_{spd_uncertainty_sigma}_{hdg_uncertainty_sigma}.csv', index = False)
