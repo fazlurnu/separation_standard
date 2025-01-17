@@ -41,7 +41,7 @@ pos_uncertainty_sigma = 15
 hdg_uncertainty_sigma = 0
 spd_uncertainty_sigma = 0
 
-show_viz = True
+show_viz = False
 
 nb_of_repetition = 5
 
@@ -57,7 +57,7 @@ conf_detection = StateBased()
 conf_resolution = MVP()
 adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
 
-for init_speed_intruder in range(5, 36, 10):
+for init_speed_intruder in [5, 15, 20, 25, 35]:
     for dpsi in range(0, 181, 2):
         los_list = []
         distance_cpa_list = []
@@ -80,8 +80,8 @@ for init_speed_intruder in range(5, 36, 10):
 
             sim_timer_second = 0
             still_in_conflict = True
-            last_in_conflicts = []
-            nb_check_last_in_conflicts = 20 ## val * simdt is the duration of the checking
+            no_conflict_counter = 0
+            nb_check_last_in_conflicts = 100 ## val * simdt is the duration of the checking
 
             lat_list = []
             lon_list = []
@@ -114,16 +114,14 @@ for init_speed_intruder in range(5, 36, 10):
                 lat_list_noise.append(adsl.lat)
                 lon_list_noise.append(adsl.lon)
 
-                ## this might be useful in case want to optimize the sim time but still wrong
-                # if(sim_timer_second > minsimtime):
-                #     ## later here add also the conflicting based on ADS-B
-                #     in_conflict = len(conf_detection.confpairs_unique) > 0
+                ## this might be useful in case want to optimize the sim time
+                if(len(reso[-1]) == 0):
+                    no_conflict_counter += 1
+                else:
+                    no_conflict_counter = 0
 
-                #     last_in_conflicts.append(in_conflict)
-                #     if len(last_in_conflicts) > nb_check_last_in_conflicts:
-                #         last_in_conflicts.pop(0)
-
-                #     still_in_conflict = any(last_in_conflicts)
+                if(no_conflict_counter > nb_check_last_in_conflicts):
+                    still_in_conflict = False
 
             ## calcualte the metrics
             distance_cpa = np.min(distance_array, axis=0)
@@ -134,7 +132,7 @@ for init_speed_intruder in range(5, 36, 10):
             los_list.append(los)
             distance_cpa_list.append(distance_cpa[distance_cpa < horizontal_sep])
             
-            print(f"DPSI: {dpsi}, IPR: {ipr}, LOS: {los}")
+            print(f"Intruder_SPD: {init_speed_intruder}, DPSI: {dpsi}, IPR: {ipr}, LOS: {los}")
             print(f"Distance CPA: {distance_cpa[distance_cpa < horizontal_sep]}")
             end_time = time.time()
 
