@@ -50,7 +50,6 @@ nb_of_repetition = 5
 ## Also add the conflict logger
 ## Add resumenav in the code
 
-results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
 bs.init(mode='sim', detached=True)
 
 conf_detection = StateBased()
@@ -58,6 +57,8 @@ conf_resolution = MVP()
 adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
 
 for init_speed_intruder in [5, 15, 20, 25, 35]:
+    results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
+    
     for dpsi in range(0, 181, 2):
         los_list = []
         distance_cpa_list = []
