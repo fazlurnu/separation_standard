@@ -56,8 +56,8 @@ class ADSL():
             x, y = np.random.multivariate_normal((0, 0), self.cov).T
 
             # Convert meters to degrees for latitude
-            # 1 degree of latitude is approximately 110,574 meters
-            lat_noise[i] = y / 110574
+            # 1 degree of latitude is approximately 111,320 meters
+            lat_noise[i] = y / 111320
 
             # Convert meters to degrees for longitude 
             # Longitude degrees depend on the latitude (they get smaller closer to the poles)

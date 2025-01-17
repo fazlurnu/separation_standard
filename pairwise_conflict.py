@@ -114,28 +114,28 @@ class PairwiseHorConflict():
 
         bs.sim.step()
         
+        reso_hdg, reso_spd, _, _, resopairs = resolution
+
         for i in range(ntraf):
             target_id = bs.traf.id[i]
 
-            ## in here implement the resumenav function
             if resolution != None:
-                if(any(target_id in pair for pair in detection.confpairs)):
-                    bs.stack.stack(f"HDG {target_id}, {resolution[0][i]}")
-                    bs.stack.stack(f"SPD {target_id}, {resolution[1][i] / kts}")
+                if(any(target_id in pair for pair in resopairs)):
+                    bs.stack.stack(f"HDG {target_id}, {reso_hdg[i]}")
+                    bs.stack.stack(f"SPD {target_id}, {reso_spd[i] / kts}")
                 else:
-                    bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}") # the DRI
+                    bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}")
                     if("DRO" in target_id):
                         bs.stack.stack(f"SPD {target_id}, {self.init_speed_ownship}")
                     else:
                         bs.stack.stack(f"SPD {target_id}, {self.init_speed_intruder}")
             else:
-                bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}") # the DRI
+                bs.stack.stack(f"HDG {target_id}, {self.init_heading[i]}")
                 if("DRO" in target_id):
                     bs.stack.stack(f"SPD {target_id}, {self.init_speed_ownship}")
                 else: 
                     bs.stack.stack(f"SPD {target_id}, {self.init_speed_intruder}")
 
-        ## FIX HERE THE DISTANCE CALCULATION
         for pair in range(self.nb_pair):
             ownship_id = f"DRO{pair:03}"
             intruder_id = f"DRI{pair:03}"
