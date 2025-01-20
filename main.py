@@ -5,6 +5,7 @@ import bluesky as bs
 
 from cd_statebased import StateBased
 from cr_mvp import MVP
+from cr_vo import VO
 from cns_adsl import ADSL
 
 import time
@@ -37,9 +38,37 @@ minsimtime = tmax/30 ## seconds
 init_speed_ownship = 20 ## in kts
 aircraft_type = 'M600'
 
-pos_uncertainty_sigma = 15
+def get_valid_input(prompt, allowed_letters):
+    while True:
+        user_input = input(prompt).lower().strip()
+        if all(char in allowed_letters for char in user_input) and len(user_input) == len(set(user_input)):
+            return user_input
+        else:
+            print(f"Invalid input. Please enter only the allowed initials: {', '.join(allowed_letters)}")
+
+source_of_uncertainty = get_valid_input(
+    "Speed, Heading, Position.\nWrite the initials to include it as part of the uncertainty (s/h/p): ",
+    {'s', 'h', 'p'}
+)
+
+vehicle_uncertainty = get_valid_input(
+    "Ownship, Intruder.\nWrite the initials to include it as source of uncertainty (o/i): ",
+    {'o', 'i'}
+)
+
+print(f"Selected source of uncertainty: {source_of_uncertainty}")
+print(f"Selected vehicle uncertainty: {vehicle_uncertainty}")
+
+pos_uncertainty_sigma = 0
 hdg_uncertainty_sigma = 0
 spd_uncertainty_sigma = 0
+
+if('s' in source_of_uncertainty):
+    spd_uncertainty_sigma = 3
+if('h' in source_of_uncertainty):
+    hdg_uncertainty_sigma = 5
+if('p' in source_of_uncertainty):
+    pos_uncertainty_sigma = 15
 
 show_viz = False
 
@@ -47,19 +76,19 @@ nb_of_repetition = 5
 
 ## TO DO:
 ## Implement ownship only or intruder only for the hdg and spd uncertainty
-## Also add the conflict logger
-## Add resumenav in the code
 
 bs.init(mode='sim', detached=True)
 
 conf_detection = StateBased()
-conf_resolution = MVP()
+conf_resolution = VO()
 adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
 
-for init_speed_intruder in [5, 15, 20, 25, 35]:
+fname = "hdg_intruder_vo"
+
+for init_speed_intruder in [20]:
     results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
-    
-    for dpsi in range(0, 181, 2):
+
+    for dpsi in range(2, 181, 2):
         los_list = []
         distance_cpa_list = []
         
@@ -99,9 +128,17 @@ for init_speed_intruder in [5, 15, 20, 25, 35]:
                     adsl._get_noisy_hdg(states)
                     adsl._get_noisy_spd(states)
 
-                    # print(round(sim_timer_second, 2), (round(sim_timer_second, 2) % bs.settings.asas_dt == 0))
-                    conf_detection.detect(adsl, adsl, horizontal_sep, 100, lookahead_time)
-                    reso = conf_resolution.resolve(conf_detection, adsl, adsl)
+                    ## select here the source of uncertainty
+                    ownship = states
+                    intruder = states
+
+                    if("o" in vehicle_uncertainty):
+                        ownship = adsl
+                    if("i" in vehicle_uncertainty):
+                        intruder = adsl
+
+                    conf_detection.detect(ownship, intruder, horizontal_sep, 100, lookahead_time)
+                    reso = conf_resolution.resolve(conf_detection, ownship, intruder)
 
                 distance_ = pairwise.step(conf_detection, reso)
                     
@@ -178,4 +215,4 @@ for init_speed_intruder in [5, 15, 20, 25, 35]:
         results['distance_cpa'].append(distance_cpa_list)
 
     df = pd.DataFrame.from_dict(results)
-    df.to_csv(f'results_{init_speed_intruder}_{pos_uncertainty_sigma}_{spd_uncertainty_sigma}_{hdg_uncertainty_sigma}.csv', index = False)
+    df.to_csv(f'results_{fname}_{init_speed_intruder}_{pos_uncertainty_sigma}_{spd_uncertainty_sigma}_{hdg_uncertainty_sigma}.csv', index = False)
