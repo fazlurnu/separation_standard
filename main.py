@@ -74,21 +74,18 @@ show_viz = False
 
 nb_of_repetition = 5
 
-## TO DO:
-## Implement ownship only or intruder only for the hdg and spd uncertainty
-
 bs.init(mode='sim', detached=True)
 
 conf_detection = StateBased()
-conf_resolution = VO()
+conf_resolution = MVP()
 adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
 
-fname = "hdg_intruder_vo"
+fname = f"{source_of_uncertainty}_{vehicle_uncertainty}_mvp"
 
-for init_speed_intruder in [20]:
+for init_speed_intruder in [5, 15, 20]:
     results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
 
-    for dpsi in range(2, 181, 2):
+    for dpsi in range(0, 181, 2):
         los_list = []
         distance_cpa_list = []
         
