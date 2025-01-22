@@ -56,6 +56,11 @@ vehicle_uncertainty = get_valid_input(
     {'o', 'i'}
 )
 
+conf_reso_algo_select = get_valid_input(
+    "MVP, VO.\nWrite the initials to select the conf resolution algorithm (m/v): ",
+    {'m', 'v'}
+)
+
 print(f"Selected source of uncertainty: {source_of_uncertainty}")
 print(f"Selected vehicle uncertainty: {vehicle_uncertainty}")
 
@@ -77,10 +82,15 @@ nb_of_repetition = 5
 bs.init(mode='sim', detached=True)
 
 conf_detection = StateBased()
-conf_resolution = MVP()
+
+if(conf_reso_algo_select == 'v'):
+    conf_resolution = VO()
+elif(conf_reso_algo_select == 'm'):
+    conf_resolution = MVP()
+
 adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
 
-fname = f"{source_of_uncertainty}_{vehicle_uncertainty}_mvp"
+fname = f"{source_of_uncertainty}_{vehicle_uncertainty}_{conf_reso_algo_select}"
 
 for init_speed_intruder in [5, 15, 20]:
     results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
