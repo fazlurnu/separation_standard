@@ -1,0 +1,164 @@
+angles,ipr,los_count,distance_cpa
+0,0.852,74,"[array([48.77168556, 47.39327348, 43.84447476, 44.28444692, 48.90457391,
+       34.47803114, 43.84835304, 48.51102796, 34.71886768, 45.14727821,
+       48.18143575, 47.65947376, 36.76769445, 45.98662346, 43.32130206,
+       41.70053617, 45.31379994, 45.67139323, 42.54012883, 49.85352795,
+       49.09336401, 47.52989161, 48.85751549, 43.47390497, 41.65016812]), array([45.69792369, 41.66631923, 44.39074907, 48.29846591, 42.57037681,
+       38.89714826, 44.45541749, 47.37586171, 47.23717372, 46.40852659,
+       24.01913445, 27.48645897, 45.13772861, 40.47429771, 21.47486109,
+       34.79438754, 49.85120679, 43.04113   , 46.75977617, 38.43635924,
+       47.9135997 ]), array([45.28436313, 30.0770614 , 39.87083956, 44.79787601, 41.17399273,
+       45.5170806 , 49.89805022, 40.67078991, 49.49460872, 40.5276456 ]), array([46.14047073, 48.06049435, 46.5975715 , 43.90495394, 45.72639807,
+       44.28980073, 41.92525342, 31.50909574, 41.0076429 , 49.91954917,
+       31.71615716, 49.18462615, 48.07946253]), array([43.7578248 , 15.58833448, 49.85795154, 39.98684109, 48.05199913])]"
+2,0.87,65,"[array([49.04298102, 49.20178198, 46.19368452, 35.99157152, 46.19187544,
+       44.98920585, 48.9514683 , 48.83020312, 48.94138948, 47.1623161 ]), array([47.95211271, 42.76988924, 47.94552252, 23.87604436, 45.19983134,
+       48.71239034, 37.27785554, 47.79437607, 47.61519858, 36.05260775,
+       46.81390321]), array([48.38057384, 49.99978048, 44.62785903, 37.68993322, 32.83720059,
+       44.60978897, 31.97981711, 48.82570775, 48.59368857, 39.7425548 ]), array([37.47529811, 44.84118282, 29.64951009, 43.62941188, 47.20068437,
+       44.33674472, 45.57159581, 42.21807456, 48.24545317, 46.5366533 ,
+       45.0946743 , 49.94151538, 44.35826868, 39.6955058 , 48.87020204,
+       49.19073947, 47.63364521]), array([45.79484317, 46.20563367, 40.6118934 , 46.62043626, 46.06547711,
+       41.98269639, 43.7563675 , 49.60602466, 44.80712846, 47.33594317,
+       49.31818285, 46.38987037, 48.92483843, 49.63898225, 47.56524534,
+       46.37276098, 40.52221309])]"
+4,0.87,65,"[array([46.95755311, 49.19405522, 47.64984768, 48.67621267, 47.6765114 ,
+       42.95050531, 31.05633643, 45.17484081, 47.71625526, 47.99646648,
+       39.58583416, 49.49108529, 49.62536275]), array([45.59967917, 44.26644076, 48.86860761, 45.88280698, 49.96283038,
+       42.65258713, 43.99100182, 34.46365974, 46.92727097, 34.15444282,
+       49.22710614, 45.92950913, 48.3204312 , 45.20449462, 48.62726948]), array([47.16246918, 45.08233205, 41.90211825, 48.18328403, 39.77576185,
+       49.66924498, 48.87368832, 47.19511506, 48.19865648, 49.78751913,
+       45.36156491, 47.87613409, 48.21704348, 48.42141104, 49.06076987,
+       49.14668559]), array([49.33534331, 44.73936567, 42.19969448]), array([47.53495144, 49.43466835, 46.64723598, 49.51284365, 43.2117762 ,
+       48.63749895, 46.46977964, 47.04188057, 46.48815973, 43.06990844,
+       44.88904852, 36.19006302, 39.68633132, 45.55970167, 47.9057915 ,
+       48.69548919, 49.99433553, 39.09602438])]"
+6,0.878,61,"[array([48.93533198, 38.57115291, 43.6581442 , 40.15819281, 47.6136707 ,
+       45.70690989, 41.82748873, 48.21903704, 48.8917119 , 48.45631631,
+       46.25058855, 47.71872846, 49.83213476, 40.48000841, 48.57997109]), array([47.30939454, 49.56990845, 48.88945068, 35.80824464, 48.44728995,
+       49.6989916 , 46.06758524, 47.94787494, 47.3755034 , 47.42649868,
+       48.82823401, 49.21893235, 44.12855061]), array([47.7309914 , 48.48945242, 37.2055773 , 42.33395747, 49.70975728,
+       38.4614703 , 49.35050604, 47.14885932, 49.68175321, 38.55878063,
+       49.81142951, 44.53349709, 46.03190957]), array([48.41167758, 43.29068832, 49.55880412, 45.80426574, 43.78050295,
+       46.32647307, 48.34874126, 44.52978239, 47.48922681, 34.80682812]), array([49.39927052, 49.49830154, 40.56514214, 48.6585021 , 49.59736379,
+       48.27502536, 45.69111125, 46.8704054 , 46.12858512, 46.94638857])]"
+8,0.852,74,"[array([49.98516367, 38.08944436, 49.60713623, 43.10801718, 48.68769298,
+       46.57611512, 49.80519372, 46.46101033, 45.39805414, 44.37597453,
+       48.352551  , 49.56823407, 43.9057974 , 41.18146511]), array([49.54686394, 46.13020593, 46.49288713, 31.10227012, 45.38933648,
+       44.02467281, 48.4039112 , 47.42443064, 48.87588442, 47.52263178,
+       45.86426091, 44.19414949, 43.66812922, 48.3657383 , 29.83621856,
+       48.72791589, 44.58880206]), array([38.85141578, 42.0445055 , 37.21355424, 45.89336504, 45.03101732,
+       44.11899505, 44.05871734, 49.01030862, 46.28708027, 42.5800632 ,
+       48.37747134, 49.46902446, 44.03735563]), array([44.85559177, 49.43128637, 46.28779298, 38.3443311 , 41.62118277,
+       44.04751316, 49.14719556, 40.79078177, 34.37777038, 47.04183439]), array([48.51759412, 42.04003415, 43.83938853, 49.48654973, 48.23943984,
+       37.45640062, 47.74407936, 40.71877134, 49.45722262, 43.29679529,
+       49.05473521, 47.25692729, 48.28109027, 46.90835664, 46.92494176,
+       41.8773812 , 44.15679981, 48.0788078 , 49.91157259, 46.02887663])]"
+10,0.894,53,"[array([48.21779104, 49.49176117, 46.61824884, 48.44963298, 47.16843125,
+       46.24063375, 21.1504923 , 46.37344397]), array([33.72326833, 44.14690656, 45.78453184, 48.60399078, 49.83361908,
+       48.69998029, 38.66705037, 49.07021781, 47.13804132, 48.53039149,
+       49.13084215, 49.27220314, 47.63141047]), array([42.65665794, 49.9000016 , 47.0648222 , 49.97847857, 48.03958589,
+       46.40218821, 49.59214345, 47.33483683, 48.81475396]), array([48.81902009, 49.00609545, 47.31701763, 47.55343079, 29.4291281 ,
+       48.96264118, 40.68723679, 45.06388253, 44.96300403, 47.2849551 ,
+       42.43454618, 44.95685176, 27.48013005, 49.42654225]), array([46.84070101, 38.033319  , 49.13086911, 47.46329114, 40.68147088,
+       45.49716817, 43.15839341, 34.67667864, 41.12815184])]"
+12,0.926,37,"[array([43.44739325, 49.64672299, 44.13886014, 46.50028873, 45.26245195,
+       48.42661252]), array([49.87176524, 49.72965866, 48.87731586, 48.346685  , 38.98007779,
+       48.98620612]), array([49.39003629, 49.98659457, 48.36407553, 43.24985486, 46.98607797,
+       48.24529351, 49.4065442 , 49.73758721, 43.38884336]), array([45.18396268, 45.47984876, 45.95568555, 49.46734774, 49.76164979,
+       35.68850332, 41.56737471]), array([44.39558107, 47.89753269, 46.19962433, 49.50086232, 26.39320792,
+       49.39556423, 45.29956761, 49.67541403, 23.51049948])]"
+14,0.922,39,"[array([17.95991433, 43.05505062, 49.25776095, 47.11895675, 32.32638028,
+       47.96595838, 43.37705748]), array([49.27391888, 48.35686366, 49.70159387, 47.72651877, 35.60935385,
+       49.49048281, 49.90420089, 43.46726209, 49.45672898]), array([39.55878187, 46.09538813, 47.17522325, 46.56286915, 38.58904328,
+       40.41378372]), array([47.27057261, 43.51515081, 26.6024274 , 48.56910705, 48.55441032,
+       47.62634791, 43.00860899]), array([49.80784035, 48.33710888, 49.57240403, 49.25563469, 45.28234152,
+       44.16920428, 44.12177738, 46.3875127 , 30.50063054, 26.39952174])]"
+16,0.95,25,"[array([49.89357769, 48.25919948, 32.52374879]), array([33.08154266, 48.04986354]), array([48.96565733, 49.75773743, 48.9954389 , 27.16025419, 49.74077137,
+       47.75284522, 48.15407617, 48.31479481]), array([48.06131916, 38.83340183, 48.18014553, 43.20480844, 44.54724444,
+       46.4516594 ]), array([48.92011289, 47.66034183, 36.40675815, 49.06390536, 49.03002615,
+       49.68031886])]"
+18,0.97,15,"[array([34.14050122]), array([47.70878271, 49.8969767 , 39.73661302, 49.00338412, 42.09985678,
+       48.69933069, 38.78248397, 47.08272463]), array([34.01285501, 47.42249742]), array([42.84032478]), array([48.4204941 , 48.16235188, 40.5617651 ])]"
+20,0.968,16,"[array([39.54495028, 43.93201909, 47.34047967]), array([48.87004729, 49.29029608, 46.25466886, 48.51936399, 40.44251234,
+       47.15348454]), array([43.29582571, 43.20080947, 49.44130881]), array([47.34923796, 41.34934481]), array([22.77359042, 48.98675252])]"
+22,0.968,16,"[array([48.95373458, 35.02380061]), array([48.86970124, 49.2950606 , 46.3992376 , 44.47693072]), array([48.60382951, 46.12746695, 24.84024816]), array([46.13627462, 49.33436473, 48.76680327]), array([45.18477064, 41.10837969, 24.60533206, 49.20479288])]"
+24,0.984,8,"[array([47.00561369, 48.56847141]), array([41.49595328, 46.66715993]), array([49.85590004, 48.40109608, 49.42547275]), array([], dtype=float64), array([48.58991685])]"
+26,0.996,2,"[array([], dtype=float64), array([], dtype=float64), array([49.31767475, 48.55357559]), array([], dtype=float64), array([], dtype=float64)]"
+28,0.99,5,"[array([45.15016881]), array([49.03828664]), array([39.00207967]), array([], dtype=float64), array([48.3280139 , 30.61942166])]"
+30,0.996,2,"[array([49.14089073]), array([49.8109412]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+32,0.998,1,"[array([], dtype=float64), array([49.5986506]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+34,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+36,0.996,2,"[array([49.42343291]), array([49.50708997]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+38,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+40,0.996,2,"[array([49.44831374]), array([], dtype=float64), array([], dtype=float64), array([46.37261575]), array([], dtype=float64)]"
+42,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([45.38869796]), array([], dtype=float64)]"
+44,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+46,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+48,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+50,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+52,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+54,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([49.98091223])]"
+56,0.998,1,"[array([], dtype=float64), array([49.9295427]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+58,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+60,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+62,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+64,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+66,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+68,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+70,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+72,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+74,0.998,1,"[array([49.74590269]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+76,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+78,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+80,0.998,1,"[array([49.96985385]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+82,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+84,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([49.9013986])]"
+86,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+88,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+90,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+92,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+94,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+96,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+98,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([49.89263709]), array([], dtype=float64)]"
+100,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+102,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+104,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+106,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+108,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([46.90738919]), array([], dtype=float64)]"
+110,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+112,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+114,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+116,0.998,1,"[array([], dtype=float64), array([47.49622514]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+118,0.998,1,"[array([48.99134332]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+120,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+122,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+124,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+126,0.998,1,"[array([], dtype=float64), array([49.19809356]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+128,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+130,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+132,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+134,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([48.86564965])]"
+136,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+138,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+140,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+142,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([48.64323443])]"
+144,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+146,0.998,1,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([49.8395861])]"
+148,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+150,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+152,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+154,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+156,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+158,0.998,1,"[array([48.981259]), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+160,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+162,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+164,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+166,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+168,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+170,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+172,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+174,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+176,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+178,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"
+180,1.0,0,"[array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64), array([], dtype=float64)]"

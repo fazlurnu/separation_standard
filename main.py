@@ -222,4 +222,4 @@ for init_speed_intruder in [5, 15, 20]:
         results['distance_cpa'].append(distance_cpa_list)
 
     df = pd.DataFrame.from_dict(results)
-    df.to_csv(f'results_{fname}_{init_speed_intruder}_{pos_uncertainty_sigma}_{spd_uncertainty_sigma}_{hdg_uncertainty_sigma}.csv', index = False)
+    df.to_csv(f'results/results_{fname}_{init_speed_intruder}_{pos_uncertainty_sigma}_{spd_uncertainty_sigma}_{hdg_uncertainty_sigma}.csv', index = False)
