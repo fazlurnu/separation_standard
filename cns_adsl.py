@@ -7,9 +7,12 @@ class ADSL():
     """ 
     
     """
-    def __init__(self, confidence_interval, spd_uncertainty_sigma, hdg_uncertainty_sigma):
+    def __init__(self, confidence_interval, spd_uncertainty_sigma, hdg_uncertainty_sigma,
+                 reception_prob = 1.0):
         # Calculate standard deviation from confidence interval
         # For 2D, 95% confidence interval is approximately 2.448 standard deviations
+        self.reception_prob = reception_prob
+
         self.std_dev = confidence_interval / 2.448
         self.spd_uncertainty_sigma = spd_uncertainty_sigma
         self.hdg_uncertainty_sigma = hdg_uncertainty_sigma
@@ -24,7 +27,7 @@ class ADSL():
         self.vs      = np.array([])  # vertical speed [m/s]
         self.id      = []  # identifier (string)
         
-    def _get_noisy_pos(self, states):
+    def _get_noisy_pos(self, states, update_array = None):
         self.ntraf = states.ntraf
         self.alt = states.alt.copy()
         self.hdg = states.hdg.copy()
@@ -64,24 +67,43 @@ class ADSL():
             # Use the length of a degree at the current latitude
             lon_noise[i] = x / (111320 * np.cos(np.deg2rad(mean_lat)))
 
-        # Noisy positions
-        self.lat = lat + lat_noise
-        self.lon = lon + lon_noise
+        if(update_array != None):
+            self.lat[update_array] = lat[update_array] + lat_noise[update_array]
+            self.lon[update_array] = lon[update_array] + lon_noise[update_array]
+        else:
+            self.lat = lat + lat_noise
+            self.lon = lon + lon_noise
 
-    def _get_noisy_hdg(self, states):
+    def _get_noisy_hdg(self, states, update_array = None):
         self.ntraf = states.ntraf
 
-        trk      = states.trk
-        self.trk = trk + np.random.normal(0, self.hdg_uncertainty_sigma, self.ntraf)
-        self.gsnorth = self.gs * np.cos(np.deg2rad(self.trk))
-        self.gseast  = self.gs * np.sin(np.deg2rad(self.trk))
+        if(update_array != None):
+            trk      = states.trk[update_array]
+            self.trk[update_array] = trk + (np.random.normal(0, self.hdg_uncertainty_sigma, self.ntraf))[update_array]
+            self.gsnorth[update_array] = self.gs[update_array] * np.cos(np.deg2rad(self.trk[update_array]))
+            self.gseast [update_array] = self.gs[update_array] * np.sin(np.deg2rad(self.trk[update_array]))
+        else:
+            self.trk = states.trk + (np.random.normal(0, self.hdg_uncertainty_sigma, self.ntraf))
+            self.gsnorth = self.gs * np.cos(np.deg2rad(self.trk))
+            self.gseast  = self.gs * np.sin(np.deg2rad(self.trk))
 
-    def _get_noisy_spd(self, states):
+    def _get_noisy_spd(self, states, update_array = None):
         self.ntraf = states.ntraf    
         
-        gs      = states.gs
-        self.gs = gs + np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf)
-        self.gsnorth = gs * np.cos(np.deg2rad(self.trk))
-        self.gseast  = gs * np.sin(np.deg2rad(self.trk))
-        # print(self.spd_uncertainty_sigma)
-        # print(np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf))
+        if(update_array != None):
+            self.gs[update_array] = states.gs[update_array] + (np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf))[update_array]
+            self.gsnorth[update_array] = self.gs * np.cos(np.deg2rad(self.trk[update_array]))
+            self.gseast[update_array]  = self.gs * np.sin(np.deg2rad(self.trk[update_array]))
+        else:
+            self.gs = states.gs + (np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf))
+            self.gsnorth = self.gs * np.cos(np.deg2rad(self.trk))
+            self.gseast  = self.gs * np.sin(np.deg2rad(self.trk))
+    
+    def _get_noisy_states(self, states):
+        ## Still buggy the update_prob_cond
+        # update_prob_cond = (np.random.random(size = states.ntraf) <= self.reception_prob)
+        # up = np.where(update_prob_cond)
+
+        self._get_noisy_pos(states)
+        self._get_noisy_hdg(states)
+        self._get_noisy_spd(states)

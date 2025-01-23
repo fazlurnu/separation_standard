@@ -131,9 +131,7 @@ for init_speed_intruder in [5, 15, 20]:
                 
                 ## make sure the conf detect and reso only done every asas_dt
                 if(round(sim_timer_second, 2) % bs.settings.asas_dt == 0):
-                    adsl._get_noisy_pos(states)
-                    adsl._get_noisy_hdg(states)
-                    adsl._get_noisy_spd(states)
+                    adsl._get_noisy_states(states)
 
                     ## select here the source of uncertainty
                     ownship = states
