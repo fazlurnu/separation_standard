@@ -26,6 +26,8 @@ class ADSL():
         self.gs      = np.array([])  # ground speed [m/s]
         self.vs      = np.array([])  # vertical speed [m/s]
         self.id      = []  # identifier (string)
+
+        self.first_update_done = False
         
     def _get_noisy_pos(self, states, update_array = None):
         self.ntraf = states.ntraf
@@ -92,8 +94,8 @@ class ADSL():
         
         if(update_array != None):
             self.gs[update_array] = states.gs[update_array] + (np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf))[update_array]
-            self.gsnorth[update_array] = self.gs * np.cos(np.deg2rad(self.trk[update_array]))
-            self.gseast[update_array]  = self.gs * np.sin(np.deg2rad(self.trk[update_array]))
+            self.gsnorth[update_array] = self.gs[update_array] * np.cos(np.deg2rad(self.trk[update_array]))
+            self.gseast[update_array]  = self.gs[update_array] * np.sin(np.deg2rad(self.trk[update_array]))
         else:
             self.gs = states.gs + (np.random.normal(0, self.spd_uncertainty_sigma, self.ntraf))
             self.gsnorth = self.gs * np.cos(np.deg2rad(self.trk))
@@ -101,9 +103,16 @@ class ADSL():
     
     def _get_noisy_states(self, states):
         ## Still buggy the update_prob_cond
-        # update_prob_cond = (np.random.random(size = states.ntraf) <= self.reception_prob)
-        # up = np.where(update_prob_cond)
+        update_prob_cond = (np.random.random(size = states.ntraf) <= self.reception_prob)
+        up = np.where(update_prob_cond)
 
-        self._get_noisy_pos(states)
-        self._get_noisy_hdg(states)
-        self._get_noisy_spd(states)
+        if not self.first_update_done:
+            self._get_noisy_pos(states)
+            self._get_noisy_hdg(states)
+            self._get_noisy_spd(states)
+
+            self.first_update_done = True
+        else:
+            self._get_noisy_pos(states, up)
+            self._get_noisy_hdg(states, up)
+            self._get_noisy_spd(states, up)
