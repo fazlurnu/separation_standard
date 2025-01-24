@@ -37,7 +37,8 @@ class PairwiseHorConflict():
     def __init__(self, 
                 pair_width: int, pair_height: int,      ## number of spawned aircraft
                 asas_pzr_m: float, dtlookahead: float,  ## separation standard params
-                init_speed_ownship: float, init_speed_intruder: float, drone_type: str,     ## aircraft params
+                init_speed_ownship: float, init_speed_intruder: float,      ## aircraft params
+                aircraft_type_ownship: str, aircraft_type_intruder: str = None,     ## aircraft params
                 init_dpsi: float = None,
                 inherent_asas_on: bool = False) -> None:
         
@@ -48,7 +49,12 @@ class PairwiseHorConflict():
 
         self.init_speed_ownship = init_speed_ownship
         self.init_speed_intruder = init_speed_intruder
-        self.drone_type = drone_type
+
+        self.aircraft_type_ownship = aircraft_type_ownship
+        if(aircraft_type_intruder == None):
+            self.aircraft_type_intruder = aircraft_type_ownship
+        else:
+            self.aircraft_type_intruder = aircraft_type_intruder
 
         if(init_dpsi != None):
             self.init_heading = np.array([
@@ -80,13 +86,13 @@ class PairwiseHorConflict():
                 aclons = start_lon + j * delta_lat_lon
                 
                 ## the heading of this one is always zero
-                bs.traf.cre(acid=ownship_id, actype= self.drone_type, aclat=aclats, aclon=aclons,
+                bs.traf.cre(acid=ownship_id, actype= self.aircraft_type_ownship, aclat=aclats, aclon=aclons,
                     achdg=self.init_heading[idx], acalt=ALT, acspd=self.init_speed_ownship)
                 
                 idx += 1
 
                 ## make intruder, dpsi is random
-                bs.traf.creconfs(acid=intruder_id, actype = self.drone_type, targetidx=bs.traf.id2idx(ownship_id),
+                bs.traf.creconfs(acid=intruder_id, actype = self.aircraft_type_intruder, targetidx=bs.traf.id2idx(ownship_id),
                                 dpsi=self.init_heading[idx], dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = self.init_speed_intruder)
                 idx += 1
                 
