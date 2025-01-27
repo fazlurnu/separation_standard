@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 
 from pairwise_conflict import *
@@ -38,41 +39,52 @@ minsimtime = tmax/30 ## seconds
 init_speed_ownship = 20 ## in kts
 aircraft_type = 'M600'
 
-def get_valid_input(prompt, allowed_letters):
-    while True:
-        user_input = input(prompt).lower().strip()
-        if all(char in allowed_letters for char in user_input) and len(user_input) == len(set(user_input)):
-            return user_input
-        else:
-            print(f"Invalid input. Please enter only the allowed initials: {', '.join(allowed_letters)}")
+if len(sys.argv) != 4:
+    print("Usage: python main.py <nav_uncertainty> <vehicle_uncertainty> <conf_reso_algo_select>")
+    print("  - nav_uncertainty: combination of s (speed), h (heading), p (position)")
+    print("  - vehicle_uncertainty: combination 'o' (ownship) and 'i' (intruder)")
+    print("  - conf_reso_algo_select: either 'm' (MVP) or 'v' (VO)")
+    
+    print("Settings is set to default: shp oi m")
 
-source_of_uncertainty = get_valid_input(
-    "Speed, Heading, Position.\nWrite the initials to include it as part of the uncertainty (s/h/p): ",
-    {'s', 'h', 'p'}
-)
+    nav_uncertainty = 'shp'
+    vehicle_uncertainty = 'oi'
+    conf_reso_algo_select = 'm'
+else:
+    nav_uncertainty = sys.argv[1].lower().strip()  # e.g. "sh", "p", "s", "shp"
+    vehicle_uncertainty = sys.argv[2].lower().strip()    # e.g. "o" or "i"
+    conf_reso_algo_select = sys.argv[3].lower().strip()  # e.g. "m" or "v"
 
-vehicle_uncertainty = get_valid_input(
-    "Ownship, Intruder.\nWrite the initials to include it as source of uncertainty (o/i): ",
-    {'o', 'i'}
-)
+    print(f"Settings is set to: {nav_uncertainty} {vehicle_uncertainty} {conf_reso_algo_select}")
 
-conf_reso_algo_select = get_valid_input(
-    "MVP, VO.\nWrite the initials to select the conf resolution algorithm (m/v): ",
-    {'m', 'v'}
-)
+# Validate nav_uncertainty letters
+allowed_uncertainty_letters = {'s', 'h', 'p'}
+if any(char not in allowed_uncertainty_letters for char in nav_uncertainty):
+    raise ValueError("nav_uncertainty can only contain 's', 'h', 'p'")
 
-print(f"Selected source of uncertainty: {source_of_uncertainty}")
+# Validate vehicle_uncertainty letters
+allowed_vehicle_letters = {'o', 'i'}
+if any(char not in allowed_vehicle_letters for char in vehicle_uncertainty):
+    raise ValueError("vehicle_uncertainty can only be 'o' or 'i'")
+
+# Validate conf_reso_algo_select letters
+allowed_algo_letters = {'m', 'v'}
+if conf_reso_algo_select not in allowed_algo_letters:
+    raise ValueError("conf_reso_algo_select can only be 'm' or 'v'")
+
+print(f"Selected source of uncertainty: {nav_uncertainty}")
 print(f"Selected vehicle uncertainty: {vehicle_uncertainty}")
+print(f"Selected resolution algorithm: {conf_reso_algo_select}")
 
 pos_uncertainty_sigma = 0
 hdg_uncertainty_sigma = 0
 spd_uncertainty_sigma = 0
 
-if('s' in source_of_uncertainty):
+if('s' in nav_uncertainty):
     spd_uncertainty_sigma = 3
-if('h' in source_of_uncertainty):
+if('h' in nav_uncertainty):
     hdg_uncertainty_sigma = 5
-if('p' in source_of_uncertainty):
+if('p' in nav_uncertainty):
     pos_uncertainty_sigma = 15
 
 show_viz = False
@@ -88,9 +100,12 @@ if(conf_reso_algo_select == 'v'):
 elif(conf_reso_algo_select == 'm'):
     conf_resolution = MVP()
 
-adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma)
+reception_prob = 1.0
 
-fname = f"{source_of_uncertainty}_{vehicle_uncertainty}_{conf_reso_algo_select}"
+adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma,
+            reception_prob)
+
+fname = f"{nav_uncertainty}_{vehicle_uncertainty}_{conf_reso_algo_select}"
 
 for init_speed_intruder in [5, 15, 20]:
     results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
@@ -107,7 +122,7 @@ for init_speed_intruder in [5, 15, 20]:
                                         asas_pzr_m=horizontal_sep, dtlookahead=lookahead_time,
                                         init_speed_ownship=init_speed_ownship, init_speed_intruder=init_speed_intruder,
                                         init_dpsi = dpsi,
-                                        drone_type= aircraft_type)
+                                        aircraft_type_ownship = aircraft_type)
 
             ## simulations
             simdt = bs.settings.simdt
