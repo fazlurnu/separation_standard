@@ -1,5 +1,6 @@
 {
     "start_lat": 52.3,
     "start_lon": 4.7,
-    "delta_lat_lon": 0.5
+    "delta_lat_lon": 0.3,
+    "reception_prob": 1.0
 }
