@@ -93,7 +93,7 @@ class PairwiseHorConflict():
 
                 ## make intruder, dpsi is random
                 bs.traf.creconfs(acid=intruder_id, actype = self.aircraft_type_intruder, targetidx=bs.traf.id2idx(ownship_id),
-                                dpsi=self.init_heading[idx], dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead, spd = self.init_speed_intruder)
+                                dpsi=self.init_heading[idx], dcpa = dcpa, tlosh = bs.settings.asas_dtlookahead * 1.5, spd = self.init_speed_intruder)
                 idx += 1
                 
                 counter += 1
