@@ -21,7 +21,7 @@ with open("pairwise_params.json", "r") as f:
 start_lat = params["start_lat"]
 start_lon = params["start_lon"]
 delta_lat_lon = params["delta_lat_lon"]
-
+reception_prob = params["reception_prob"]
 time_list = []
 pairlist = []
 
@@ -33,7 +33,7 @@ height = 10
 
 horizontal_sep = 50 ## in meters
 lookahead_time = 15 ## seconds
-tmax = 4 * lookahead_time ## seconds
+tmax = 5 * lookahead_time ## seconds
 minsimtime = tmax/30 ## seconds
 
 init_speed_ownship = 20 ## in kts
@@ -99,8 +99,6 @@ if(conf_reso_algo_select == 'v'):
     conf_resolution = VO()
 elif(conf_reso_algo_select == 'm'):
     conf_resolution = MVP()
-
-reception_prob = 1.0
 
 adsl = ADSL(pos_uncertainty_sigma, spd_uncertainty_sigma, hdg_uncertainty_sigma,
             reception_prob)
@@ -179,7 +177,11 @@ for init_speed_intruder in [5, 15, 20]:
                     no_conflict_counter = 0
 
                 if(no_conflict_counter > nb_check_last_in_conflicts):
-                    still_in_conflict = False
+                    ## if the reception prob is very low, for it to always solve till tmax
+                    if(reception_prob < 0.2):
+                        still_in_conflict = True
+                    else:
+                        still_in_conflict = False
 
             ## calcualte the metrics
             distance_cpa = np.min(distance_array, axis=0)
