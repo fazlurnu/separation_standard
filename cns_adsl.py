@@ -102,10 +102,10 @@ class ADSL():
             self.gseast  = self.gs * np.sin(np.deg2rad(self.trk))
     
     def _get_noisy_states(self, states):
-        ## Still buggy the update_prob_cond
+        ## Still buggy the update_prob_cond, actually require the comm uncertainty to be assymetrical
         update_prob_cond = (np.random.random(size = states.ntraf) <= self.reception_prob)
         up = np.where(update_prob_cond)
-
+        
         if not self.first_update_done:
             self._get_noisy_pos(states)
             self._get_noisy_hdg(states)
