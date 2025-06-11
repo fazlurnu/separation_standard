@@ -238,6 +238,8 @@ class VO(Entity):
             # Because ADSB is ON, this is done for each aircraft separately
             if idx1 >-1 and idx2 > -1:
                 dv_vo, tsolV = self.VO(ownship, intruder, conf, qdr, dist, tLOS, idx1, idx2)
+
+                # print("dv_vo, ", dv_vo)
                 if tsolV < timesolveV[idx1]:
                     timesolveV[idx1] = tsolV
 

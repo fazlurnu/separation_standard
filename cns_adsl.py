@@ -7,15 +7,14 @@ class ADSL():
     """ 
     
     """
-    def __init__(self, confidence_interval, spd_uncertainty_sigma, hdg_uncertainty_sigma,
+    def __init__(self, confidence_interval, confidence_interval_velo,
                  reception_prob = 1.0):
         # Calculate standard deviation from confidence interval
         # For 2D, 95% confidence interval is approximately 2.448 standard deviations
         self.reception_prob = reception_prob
 
         self.std_dev = confidence_interval / 2.448
-        self.spd_uncertainty_sigma = spd_uncertainty_sigma
-        self.hdg_uncertainty_sigma = hdg_uncertainty_sigma
+        self.velo_std_dev = confidence_interval_velo / 2.448
 
         self.ntraf = 0
         self.lat     = np.array([])  # latitude [deg]
@@ -76,6 +75,23 @@ class ADSL():
             self.lat = lat + lat_noise
             self.lon = lon + lon_noise
 
+    def _get_noisy_velo(self, states, update_array = None):
+        self.ntraf = states.ntraf
+
+        self.cov_velo = np.array([[self.velo_std_dev**2, 0], 
+                                [0, self.velo_std_dev**2]])
+        
+        if(update_array != None):
+            vx_noise, vy_noise = np.random.multivariate_normal((0, 0), self.cov_velo, self.ntraf).T
+
+            self.gsnorth[update_array] = self.gs[update_array] * np.cos(np.deg2rad(self.trk[update_array]))
+            self.gseast [update_array] = self.gs[update_array] * np.sin(np.deg2rad(self.trk[update_array]))
+        else:
+            vx_noise, vy_noise = np.random.multivariate_normal((0, 0), self.cov_velo, self.ntraf).T
+
+            self.gsnorth = self.gs * np.cos(np.deg2rad(self.trk)) + vx_noise
+            self.gseast  = self.gs * np.sin(np.deg2rad(self.trk)) + vy_noise
+
     def _get_noisy_hdg(self, states, update_array = None):
         self.ntraf = states.ntraf
 
@@ -108,11 +124,9 @@ class ADSL():
         
         if not self.first_update_done:
             self._get_noisy_pos(states)
-            self._get_noisy_hdg(states)
-            self._get_noisy_spd(states)
+            self._get_noisy_velo(states)
 
             self.first_update_done = True
         else:
             self._get_noisy_pos(states, up)
-            self._get_noisy_hdg(states, up)
-            self._get_noisy_spd(states, up)
+            self._get_noisy_velo(states, up)
