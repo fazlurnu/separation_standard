@@ -3,3 +3,9 @@ test.py
 __pycache__
 *ipynb
 ipynb_checkpoints
+*icns*
+trajectories
+results/*.csv
+results/*.DS_Store
+.DS_Store
+1_RPZ_LAT_Optimization.code-workspace
