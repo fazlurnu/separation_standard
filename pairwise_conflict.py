@@ -12,7 +12,7 @@ import json
 M2NM = 1/1852
 NM2M = 1852
 
-DCPA_M = 0
+DCPA_M = 45
 
 ALT = 100
 
