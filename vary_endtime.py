@@ -46,7 +46,9 @@ def lookup_max_time_norm(reception_prob: float, dpsi: int, dtlook: int) -> float
 start_lat = params["start_lat"]
 start_lon = params["start_lon"]
 delta_lat_lon = params["delta_lat_lon"]
-reception_prob = 1.0
+reception_prob = 0.9
+
+SIMDT_FACTOR = 4
 
 # Simulation grid and conflict parameters
 width = 10
@@ -55,7 +57,7 @@ horizontal_sep = 50  # in meters
 
 init_speed_ownship = 20  # kts
 aircraft_type = 'M600'
-nb_of_repetition = 100
+nb_of_repetition = 10000
 show_viz = False
 
 # Argument parsing
@@ -107,7 +109,7 @@ for pos_uncertainty_sigma in [15]:
                 
                 results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
 
-                for dpsi in tqdm([2, 10, 30, 90, 150, 180], desc=f"DPSI for SPD {init_speed_intruder}", leave=False):
+                for dpsi in tqdm([10], desc=f"DPSI for SPD {init_speed_intruder}", leave=False):
                 # for dpsi in tqdm(range(2, 4, 2), desc=f"DPSI for SPD {init_speed_intruder}", leave=False):
 
                     # Example usage
@@ -130,7 +132,7 @@ for pos_uncertainty_sigma in [15]:
                             init_dpsi=dpsi, aircraft_type_ownship=aircraft_type
                         )
 
-                        simdt = bs.settings.simdt * 4
+                        simdt = bs.settings.simdt * SIMDT_FACTOR
                         t = np.arange(0, tmax + simdt, simdt)
                         distance_array = []
 
@@ -157,8 +159,9 @@ for pos_uncertainty_sigma in [15]:
                                 conf_detection.detect(ownship, intruder, horizontal_sep, 100, lookahead_time)
                                 reso = conf_resolution.resolve(conf_detection, ownship, intruder)
 
-                            distance_ = pairwise.step(conf_detection, reso)
+                            distance_ = pairwise.step(conf_detection, reso, simdt_factor=SIMDT_FACTOR)
                             distance_array.append(distance_)
+                            # print(np.mean(distance_array), np.min(distance_array))
 
                             time_list.append(sim_timer_second)
 
@@ -207,7 +210,7 @@ for pos_uncertainty_sigma in [15]:
 
                         los_list.append(los)
                         # distance_cpa_list.append(distance_cpa[distance_cpa < horizontal_sep])
-                        distance_cpa_list.append(distance_cpa)
+                        distance_cpa_list.append(np.round(distance_cpa, 3))
 
                         # print(f"Intruder_SPD: {init_speed_intruder}, DPSI: {dpsi}, IPR: {ipr}, LOS: {los}")
                         # print(f"Distance CPA: {distance_cpa}")
