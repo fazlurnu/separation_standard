@@ -108,9 +108,9 @@ class PairwiseHorConflict():
     def _get_states(self):
         return bs.traf
 
-    def step(self, detection, resolution) -> np.ndarray:
+    def step(self, detection, resolution, simdt_factor = 1) -> np.ndarray:
         # set simulation time step, and enable fast-time running
-        simdt = bs.settings.simdt
+        simdt = bs.settings.simdt * simdt_factor
         bs.stack.stack(f"DT {simdt};FF")
 
         # allocate some empty arrays for the results

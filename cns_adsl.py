@@ -23,6 +23,8 @@ class ADSL():
         self.hdg     = np.array([])  # traffic heading [deg]
         self.trk     = np.array([])  # track angle [deg]
         self.gs      = np.array([])  # ground speed [m/s]
+        self.gseast  = np.array([])  # ground speed east [m/s]
+        self.gsnorth = np.array([])  # ground speed north [m/s]
         self.vs      = np.array([])  # vertical speed [m/s]
         self.id      = []  # identifier (string)
 
@@ -130,3 +132,36 @@ class ADSL():
         else:
             self._get_noisy_pos(states, up)
             self._get_noisy_velo(states, up)
+
+    def send_data(self, dst_adsl, src_adsl, indices=None):
+        """Copy measurement from src to dst. This simulates sending data from ownship to intruder
+        If indices is None: full copy. Else, only update specific aircraft.
+        """
+
+        MEAS_FIELDS = [
+                        "ntraf", "id", "lat", "lon", "alt", "hdg", "trk", "gs", "vs",
+                        "gseast", "gsnorth"
+                    ]
+        
+        for f in MEAS_FIELDS:
+            src_val = getattr(src_adsl, f)
+            dst_val = getattr(dst_adsl, f)
+
+            if isinstance(src_val, np.ndarray):
+                if indices is None:
+                    setattr(dst_adsl, f, src_val.copy())
+                else:
+                    if dst_val.shape != src_val.shape:
+                        setattr(dst_adsl, f, src_val.copy())
+                    else:
+
+                        dst_val[indices] = src_val[indices]
+            else:
+                if indices is None:
+                    setattr(dst_adsl, f, src_val)
+                else:
+                    if isinstance(src_val, list):
+                        for i in indices:
+                            dst_val[i] = src_val[i]
+
+        dst_adsl.first_update_done = True
