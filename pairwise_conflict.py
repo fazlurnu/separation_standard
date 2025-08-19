@@ -142,19 +142,29 @@ class PairwiseHorConflict():
                 else: 
                     bs.stack.stack(f"SPD {target_id}, {self.init_speed_intruder}")
 
-        for pair in range(self.nb_pair):
-            ownship_id = f"DRO{pair:03}"
-            intruder_id = f"DRI{pair:03}"
-            
-            lat_dro_0 = bs.traf.lat[bs.traf.id2idx(ownship_id)]
-            lon_dro_0 = bs.traf.lon[bs.traf.id2idx(ownship_id)]
+        # Precompute IDs only once
+        ownship_ids   = [f"DRO{i:03}" for i in range(self.nb_pair)]
+        intruder_ids  = [f"DRI{i:03}" for i in range(self.nb_pair)]
 
-            lat_dri_0 = bs.traf.lat[bs.traf.id2idx(intruder_id)]
-            lon_dri_0 = bs.traf.lon[bs.traf.id2idx(intruder_id)]
+        # Convert to indices just once
+        ownship_idx   = [bs.traf.id2idx(oid) for oid in ownship_ids]
+        intruder_idx  = [bs.traf.id2idx(iid) for iid in intruder_ids]
 
-            qdr, dist = geo.kwikqdrdist_matrix(np.asmatrix(lat_dro_0), np.asmatrix(lon_dro_0),
-                                    np.asmatrix(lat_dri_0), np.asmatrix(lon_dri_0))
-            
-            self.distance_array[pair] = dist * NM2M
+        # Gather lat/lon arrays for all pairs
+        lat_dro = np.array([bs.traf.lat[idx] for idx in ownship_idx])
+        lon_dro = np.array([bs.traf.lon[idx] for idx in ownship_idx])
+        lat_dri = np.array([bs.traf.lat[idx] for idx in intruder_idx])
+        lon_dri = np.array([bs.traf.lon[idx] for idx in intruder_idx])
+
+        # Compute all distances in one vectorized call
+        _, dist = geo.kwikqdrdist_matrix(
+            np.asmatrix(lat_dro),
+            np.asmatrix(lon_dro),
+            np.asmatrix(lat_dri),
+            np.asmatrix(lon_dri)
+        )
+
+        # Store results in meters
+        self.distance_array[:] = np.diag(dist) * NM2M
         
         return np.array(self.distance_array)

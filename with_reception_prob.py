@@ -57,7 +57,7 @@ horizontal_sep = 50  # in meters
 
 init_speed_ownship = 20  # kts
 aircraft_type = 'M600'
-nb_of_repetition = 10000
+nb_of_repetition = 500
 show_viz = False
 
 # Argument parsing
@@ -96,25 +96,25 @@ conf_resolution = VO() if conf_reso_algo_select == 'v' else MVP()
 fname = f"{nav_uncertainty}_{vehicle_uncertainty}_{conf_reso_algo_select}"
 
 # Main simulation loops with tqdm
-for reception_prob in [1.0, 0.9, 0.8]:
-    for pos_uncertainty_sigma in tqdm([1.5, 5, 15], desc="pos_uncertainty_sigma"):
-        for vel_uncertainty_sigma in tqdm([0.5, 1.5], desc="vel_uncertainty_sigma"):
-            adsl = ADSL(pos_uncertainty_sigma, vel_uncertainty_sigma, reception_prob)
-            for lookahead_time in tqdm([15, 10, 5], desc="Lookahead time"):
+for pos_uncertainty_sigma in tqdm([15], desc="pos_uncertainty_sigma"):
+    for vel_uncertainty_sigma in tqdm([0], desc="vel_uncertainty_sigma"):
+        adsl = ADSL(pos_uncertainty_sigma, vel_uncertainty_sigma, reception_prob)
+        for reception_prob in [0.8]:
+            for lookahead_time in tqdm([15], desc="Lookahead time"):
                 # for init_speed_intruder in tqdm([20], desc="Intruder Speeds"):
-                for init_speed_intruder in [20]:
-                    init_speed_ownship = init_speed_intruder
+                for init_speed_intruder in [5, 15, 20]:
+                    # init_speed_ownship = init_speed_intruder
                     # Create directory for this speed if it doesn't exist
                     speed_dir = f"trajectories/{init_speed_intruder}"
                     os.makedirs(speed_dir, exist_ok=True)
                     
                     results = {'angles': [], 'ipr': [], 'los_count': [], 'distance_cpa': []}
 
-                    for dpsi in [4, 10, 30, 150]:
-                    # for dpsi in tqdm(range(2, 4, 2), desc=f"DPSI for SPD {init_speed_intruder}", leave=False):
+                    # for dpsi in [4, 10]:
+                    for dpsi in tqdm(range(2, 41, 2), desc=f"DPSI"):
 
                         # Example usage
-                        tmax = lookup_max_time_norm(reception_prob, dpsi, lookahead_time) * 1.2 * lookahead_time
+                        tmax = lookup_max_time_norm(reception_prob, dpsi, lookahead_time) * 1.5 * lookahead_time
 
                         los_list = []
                         distance_cpa_list = []
@@ -123,7 +123,8 @@ for reception_prob in [1.0, 0.9, 0.8]:
                         dpsi_dir = f"{speed_dir}/dpsi_{dpsi}"
                         os.makedirs(dpsi_dir, exist_ok=True)
                         
-                        for rep in tqdm(range(nb_of_repetition), desc="Rep"):
+                        for rep in tqdm(range(nb_of_repetition), desc="rep", leave=False):  # Changed _ to rep to track repetition number
+                        # for rep in range(nb_of_repetition):
                             start_time = time.time()
 
                             pairwise = PairwiseHorConflict(
@@ -134,7 +135,6 @@ for reception_prob in [1.0, 0.9, 0.8]:
                             )
 
                             simdt = bs.settings.simdt * SIMDT_FACTOR
-                            t = np.arange(0, tmax + simdt, simdt)
                             distance_array = []
 
                             sim_timer_second = 0
@@ -143,8 +143,8 @@ for reception_prob in [1.0, 0.9, 0.8]:
                             nb_check_last_in_conflicts = 100
 
                             lat_list, lon_list = [], []
-                            gs_list, hdg_list = [], []
-                            lat_list_noise, lon_list_noise = [], []
+                            # gs_list, hdg_list = [], []
+                            # lat_list_noise, lon_list_noise = [], []
                             id_list = []
                             time_list = []
 
@@ -201,20 +201,10 @@ for reception_prob in [1.0, 0.9, 0.8]:
                                 id_list.append(states.id)
                                 lat_list.append(states.lat)
                                 lon_list.append(states.lon)
-                                gs_list.append(states.gs)
-                                hdg_list.append(states.hdg)
-                                lat_list_noise.append(adsl.lat)
-                                lon_list_noise.append(adsl.lon)
-
-                                if len(reso[-1]) == 0:
-                                    no_conflict_counter += 1
-                                else:
-                                    no_conflict_counter = 0
-
-                                if no_conflict_counter > nb_check_last_in_conflicts:
-                                    still_in_conflict = reception_prob < 0.2
-                                else:
-                                    still_in_conflict = True
+                                # gs_list.append(states.gs)
+                                # hdg_list.append(states.hdg)
+                                # lat_list_noise.append(adsl.lat)
+                                # lon_list_noise.append(adsl.lon)
 
                             # Save trajectory data for this repetition
                             trajectory_df = pd.DataFrame({
@@ -222,8 +212,8 @@ for reception_prob in [1.0, 0.9, 0.8]:
                                 'id': id_list,
                                 'lat': lat_list,
                                 'lon': lon_list,
-                                'gs': gs_list,
-                                'hdg': hdg_list
+                                # 'gs': gs_list,
+                                # 'hdg': hdg_list
                             })
 
                             
@@ -237,11 +227,8 @@ for reception_prob in [1.0, 0.9, 0.8]:
                             los = (distance_cpa < horizontal_sep).sum()
                             ipr = ((width * height) - los) / (width * height)
 
-                            if(ipr < 1.0):
-                                trajectory_df.to_csv(f"{dpsi_dir}/trajectory_{fname}_{init_speed_intruder}_{pos_uncertainty_sigma}_{vel_uncertainty_sigma}_{rep}.csv", index=False)
-
-                            if(rep < 100):
-                                trajectory_df.to_csv(f"{dpsi_dir}/trajectory_{fname}_{init_speed_intruder}_{pos_uncertainty_sigma}_{vel_uncertainty_sigma}_{rep}.csv", index=False)
+                            # if((ipr < 1.0) or (rep < 100)):
+                                # trajectory_df.to_csv(f"{dpsi_dir}/trajectory_{fname}_{init_speed_intruder}_{pos_uncertainty_sigma}_{vel_uncertainty_sigma}_{lookahead_time}_{reception_prob}_{rep}.csv", index=False)
 
                             los_list.append(los)
                             # distance_cpa_list.append(distance_cpa[distance_cpa < horizontal_sep])
@@ -258,8 +245,8 @@ for reception_prob in [1.0, 0.9, 0.8]:
 
                                 lon_list = np.array(lon_list)
                                 lat_list = np.array(lat_list)
-                                lon_list_noise = np.array(lon_list_noise)
-                                lat_list_noise = np.array(lat_list_noise)
+                                # lon_list_noise = np.array(lon_list_noise)
+                                # lat_list_noise = np.array(lat_list_noise)
 
                                 for i in range(lon_list.shape[1]):
                                     plt.plot(lon_list[:, i], lat_list[:, i], color='tab:blue')
