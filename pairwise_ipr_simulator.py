@@ -107,18 +107,19 @@ def _xtrack_area_norm_all_ac(
 
     return float(_np.mean(vals)) if vals else 0.0
 # -----------------------------------------------------------------------------#
-    
 
 def _lookup_max_time_norm(reception_prob: float, dpsi: int, dtlook: int, csv_path: str = "max_time_norm.csv") -> float:
     """
     Returns max_time_norm for a given combination of reception_prob, dpsi, and dtlook.
-    Falls back to 4 if no exact match is found or file is missing.
+    Falls back to 10 if dpsi < 10, otherwise 4 if no exact match is found or file is missing.
     """
     try:
         df = pd.read_csv(csv_path)
+        dpsi = 180 - abs((dpsi % 360) - 180)  # create triangle wave function
         dtlook = math.ceil(dtlook / 5) * 5
-        dtlook = 15 if dtlook > 15 else dtlook
+        dtlook = 15 if dtlook > 15 else dtlook  # cap dtlook at 15
         reception_prob = math.floor(reception_prob / 0.1) * 0.1
+
         result = df[
             (df['reception_prob'] == reception_prob) &
             (df['dpsi'] == dpsi) &
@@ -128,7 +129,9 @@ def _lookup_max_time_norm(reception_prob: float, dpsi: int, dtlook: int, csv_pat
             return float(result.iloc[0]['max_time_norm'])
     except Exception:
         pass
-    return 4.0  # safe default
+
+    # fallback behavior
+    return 10.0 if dpsi < 10 else 4.0
 
 def _run_repetition(
     rep: int,
@@ -345,7 +348,8 @@ class PairwiseIPRSimulator:
         self.SIMDT_FACTOR = SIMDT_FACTOR
         self.vehicle_uncertainty = vehicle_uncertainty
         self.conf_reso_algo_select = conf_reso_algo_select
-        self.n_jobs = n_jobs
+        cpu_workers = max(1, os.cpu_count() or 1)
+        self.n_jobs = max(1, min(int(n_jobs), cpu_workers))
         self.max_time_norm_csv = max_time_norm_csv
         self.trajectory_dir = trajectory_dir
         # # Init BlueSky once in the main process
@@ -370,8 +374,8 @@ class PairwiseIPRSimulator:
         with parallel_backend("loky", inner_max_num_threads=1):
             results_parallel = ReportingParallel(
                 n_jobs=self.n_jobs,
-                verbose=10,
-                report_every=10,
+                verbose=0,
+                report_every=100,
             )(
                 delayed(_run_repetition)(  # unchanged args
                     rep,
