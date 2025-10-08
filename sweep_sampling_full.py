@@ -18,8 +18,8 @@ Supports an additional sweep method "adaptive":
   - Total 96 samples
 
 Usage examples:
-  python sweep_sampling_full_adaptive.py --script sample_ipr.py --method sobol --n-samples 96
-  python sweep_sampling_full_adaptive.py --script sample_ipr.py --method adaptive
+  python sweep_sampling_full.py --script sample_ipr.py --method sobol --n-samples 96
+  python sweep_sampling_full.py --script sample_ipr.py --method adaptive
 """
 
 import sys
@@ -33,7 +33,7 @@ from itertools import product
 from tqdm import tqdm
 
 # You can change these lists as needed
-FIXED_DPSI   = list(range(2, 360, 2))
+FIXED_DPSI   = [2, 6, 24]
 RECEP_LIST   = [0.95]      # reception_prob
 POS_LIST     = [15.0]      # pos_uncertainty_sigma
 VEL_LIST     = [1.5]       # vel_uncertainty_sigma
@@ -43,7 +43,7 @@ def _tagify(dpsi, rprob, pos, vel):
     r = int(round(rprob * 100))      # 0.90 -> 90, 0.95 -> 95
     p = int(round(pos * 10))         # 1.5 -> 15, 5.0 -> 50, 15.0 -> 150
     v = int(round(vel * 10))         # 0.5 -> 5, 1.5 -> 15
-    return f"dpsi{dpsi:03d}_r{r:03d}_pos{p:03d}_vel{v:03d}"
+    return f"dpsi{dpsi:06.1f}_r{r:03d}_pos{p:03d}_vel{v:03d}"
 
 
 def run_one(python_exe, script_path, out_root, dpsi, rprob, pos, vel,
@@ -78,7 +78,7 @@ def run_one(python_exe, script_path, out_root, dpsi, rprob, pos, vel,
                 "--grid-resofach", str(grid_rf)]
     elif method == "adaptive":
         # Do NOT pass --method here (or pass a benign one if you prefer, e.g., sobol).
-        cmd += ["--adaptive", "--batch-size", "4", "--iterations", "20"]
+        cmd += ["--adaptive", "--batch-size", "4", "--iterations", "16"]
     else:
         cmd += ["--method", method, "--n-samples", str(n_samples)]
 

@@ -13,10 +13,10 @@ Produces (under --out-root, default ./sampling_sweep_full_adaptive):
 - combined_metrics.npy
 
 Supports an additional sweep method "adaptive" using the shifted-tanh logistic
-sampler in `adaptive_sampling_tanh.py`. When --method adaptive is used, this
+sampler in `sample_ipr.py`. When --method adaptive is used, this
 driver forwards the exact flags you’d run manually, e.g.:
 
-    python adaptive_sampling_tanh.py \
+    python sample_ipr.py \
       --adaptive \
       --budget 96 \
       --n-init 32 \
@@ -26,8 +26,8 @@ driver forwards the exact flags you’d run manually, e.g.:
       --plot-grid-res 200
 
 Usage examples:
-  python sweep_sampling_full_adaptive.py --script adaptive_sampling_tanh.py --method sobol --n-samples 96
-  python sweep_sampling_full_adaptive.py --script adaptive_sampling_tanh.py --method adaptive
+  python sweep_sampling_full_adaptive.py --script sample_ipr.py --method sobol --n-samples 96
+  python sweep_sampling_full_adaptive.py --script sample_ipr.py --method adaptive
 """
 
 from __future__ import annotations
@@ -73,7 +73,7 @@ def run_one(python_exe, script_path, out_root, dpsi, rprob, pos, vel,
     if resume and summary_json.exists() and eval_csv.exists() and metrics_npy.exists():
         return summary_json, eval_csv, metrics_npy, None
 
-    # Build command to call the sampling script (e.g., adaptive_sampling_tanh.py)
+    # Build command to call the sampling script (e.g., sample_ipr.py)
     cmd = [
         python_exe, str(script_path),
         "--out-dir", str(out_dir),
@@ -115,8 +115,8 @@ def run_one(python_exe, script_path, out_root, dpsi, rprob, pos, vel,
 
 def main():
     ap = argparse.ArgumentParser(description="Full sweep driver for IPR sampling scripts")
-    ap.add_argument("--script", type=Path, default=Path("adaptive_sampling_tanh.py"),
-                    help="Path to the sampling script (default: ./adaptive_sampling_tanh.py)")
+    ap.add_argument("--script", type=Path, default=Path("sample_ipr.py"),
+                    help="Path to the sampling script (default: ./sample_ipr.py)")
     ap.add_argument("--out-root", type=Path, default=Path("sampling_sweep_full_adaptive"),
                     help="Root directory for all runs (default: ./sampling_sweep_full_adaptive)")
     ap.add_argument("--python", type=str, default=sys.executable,
